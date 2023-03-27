@@ -1,0 +1,98 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.search {
+  outline: 0;
+  border-width: 0 0 2px;
+  border-color: grey;
+}
+.search:focus {
+  border-color: black;
+  border-width: 0 0 2px;
+}
+
+.control {
+  background-color: #FFFFFF;
+  display: flex;   
+  flex-wrap: wrap;
+  padding: 10px;
+  width: 310px;
+  border-radius: 10px;
+  max-height: calc(100vh - 110px);
+  position: absolute; 
+  left: 17px; 
+  top: 100px;
+  z-index: 2;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.myApp {
+  margin-top: 90px;
+  margin-left: 20px;
+}
+
+.appHome {
+  margin-top: 90px;
+  margin-left: 17px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: calc(100vh - 90px);
+/*  margin-top: 90px;*/
+z-index: 1;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.controlAccordion {
+  width: 290px;
+  padding-top: 10px;
+  accordion-padding-y: 120px;
+
+  accordion-button-active-bg: grey;
+  accordion-button-active-color: grey;
+}
+
+.controlAccordionButton {
+  accordion-button-active-bg: grey;
+  accordion-button-active-color: grey;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
