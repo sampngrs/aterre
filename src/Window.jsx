@@ -21,12 +21,19 @@ return (
           <div className = "grey" onClick ={() => setActive(false)}> </div>  
            </CSSTransition>
            
-
+            <CSSTransition
+           in={active}
+           timeout={200}
+           classNames="about"
+           unmountOnExit
+           >
+           
 			<div className = "about shadow"> 
 
             {props.children}
 
             </div>  
+            </CSSTransition>
 
         </div> 
 	

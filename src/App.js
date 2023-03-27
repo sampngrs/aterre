@@ -280,7 +280,7 @@ function MainScreen () {
           <div className = "grey" onClick ={() => setAboutActive(false)}> </div>  
            </CSSTransition>*/}
 
-      <CSSTransition
+{/*      <CSSTransition
            in={aboutActive}
            ref={nodeRef}
            timeout={200}
@@ -289,8 +289,12 @@ function MainScreen () {
            >
             <About setActive={setAboutActive} active={aboutActive}/>
 
-           </CSSTransition>
+           </CSSTransition>*/}
 
+      
+            <About setActive={setAboutActive} active={aboutActive}/>
+
+      
            
       <ControlPanel 
       map = {mapRef.current} 
