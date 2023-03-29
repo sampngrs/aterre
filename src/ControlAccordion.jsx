@@ -225,12 +225,14 @@ function ControlAccordion(props){
   </VictoryChart>
   
   </div> 
-  <div   onMouseEnter={() => (console.log('hello'), clearTimeout(timer))}
-  onMouseLeave={() => 
-     {timer = setTimeout(() => {
-            console.log('goodbye')
-           }, 1000)}
-    }>
+  <div   
+  // onMouseEnter={() => (console.log('hello'), clearTimeout(timer))}
+  // onMouseLeave={() => 
+  //    {timer = setTimeout(() => {
+  //           console.log('goodbye')
+  //          }, 1000)}
+  //   }
+    >
     <Paginate items = {lines_disp} length = {4}/>
   
   </div>

@@ -21,7 +21,6 @@ function Paginate (props) {
 
 (props.items.length / maxItems < page) ? setPage(Math.round(props.items.length / maxItems) ) : console.log() ;
 
-console.log(prevPage.current, page)
 
   
 

@@ -135,26 +135,21 @@ def get_crime(lat,lon):
 	# shapes = gpd.read_file('static/data/London-wards-2018_ESRI/London_Ward.shp')
 	shapes = gpd.read_file('static/Voting Wards/london_voting_wards.shp')
 	point = gpd.GeoSeries.from_xy([lon], [lat], crs="EPSG:4326")
-	filename = '{}.csv'.format(shapes[shapes.geometry.contains(point.iloc[0])]['Ward'].iloc[0].replace('.', ''))
+	area = shapes[shapes.geometry.contains(point.iloc[0])].iloc[0].replace('.', '')
+	print(area)
+	filename = '{}.csv'.format(area['Ward'])
 	# return pd.read_csv('static/crime/{}'.format(filename)).to_json(orient='records')
 	return [
 	{
 	'id': 'crime', 
 	'title': 'Recorded Crime', 
-	'data': flatten(pd.read_csv('static/Data/Ward Level Crime/{}'.format(filename))).to_json(orient='records')}, 
-	{
-	'id': 'density', 
-	'title': 'Population Density', 
-	'data': flatten(pd.read_csv("static/Data/Ward Level Crime/Woodside.csv".format(filename))).to_json(orient='records')}, 
+	'data': flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward']))).to_json(orient='records')}
+	, 
 	{
 	'id': 'jobs', 
 	'title': 'Employment by Sector', 
-	'data': flatten(pd.read_csv("static/Data/Ward Level Crime/Regent's Park.csv".format(filename))).to_json(orient='records')}, 
-	{
-	'id': 'other', 
-	'title': 'Some Statistic', 
-	'data': flatten(pd.read_csv('static/Data/Ward Level Crime/Fulham Town.csv'.format(filename)))
-	.to_json(orient='records')}]
+	'data': pd.read_csv("static/Data/Sets/Jobs/Borough/{}.csv".format(area['Borough'])).drop('Unnamed: 0', axis = 1).reset_index().to_json(orient='records')}
+	]
 
 def flatten(data):
 	x = data.groupby(['LookUp_BoroughName','WardCode', 'WardName', 'MajorText']).sum().drop('Unnamed: 0', axis = 1).reset_index()

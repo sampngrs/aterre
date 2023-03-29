@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 import './App.scss';
+import './Animations.scss';
 import { CSSTransition } from 'react-transition-group';
 
 
 function Window (props) {
     const {setActive} = props;
     const {active} = props;
+    const {animClass = "about"} = props;
 
 return (
 
@@ -24,7 +26,7 @@ return (
             <CSSTransition
            in={active}
            timeout={200}
-           classNames="about"
+           classNames={animClass}
            unmountOnExit
            >
            

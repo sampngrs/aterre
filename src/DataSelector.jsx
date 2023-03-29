@@ -11,9 +11,11 @@ import Window from './Window.jsx'
 function DataSelector (props) {
     let {dropdown = true} = props
     const [expanded, setExpanded] = useState(false)
+    const {fullscreen} = props;
+    const {setFullscreen} = props
     const { titles } = props
     dropdown = props.titles.length > 1
-    const activeTitle = props.titles.filter((item) => item.id == props.activeKey)[0].title
+    const activeTitle = titles.length > 0 && props.activeKey ? props.titles.filter((item) => item.id == props.activeKey)[0].title : null
 
     const datasets = titles.filter((obs) => obs.id != props.activeKey).map((item, index) => 
                                                     <div style={{width:'100%', 
@@ -21,8 +23,20 @@ function DataSelector (props) {
                                                     padding: '5px 0px 5px 0px'}}> <h7 style={{paddingLeft:10, fontSize:13, cursor:'pointer', marginTop:'10px'}} onClick={() => (props.setActiveKey(item.id), setExpanded(false))}> {item.title} </h7> <br /> </div>
                                                 )
 
-return (
-            <div style={{position:'relative', zIndex:1}}>
+return (    
+
+            <div> 
+
+                <Window animClass='left-expand' setActive={setFullscreen} active = {fullscreen}> 
+                
+                    <div style={{}}> {props.children} </div> 
+
+                </Window>
+
+            <div style={{position:'relative', zIndex:5}}>
+
+            
+
 			<div style = {{width:'100%', height: '35px', backgroundColor:'black', color:'white', padding:5, borderRadius:'0.375rem', display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between', zIndex:1}} >
                 <div>
 
@@ -59,9 +73,9 @@ return (
            
 
                 <div> 
-                <Button classNames='' variant='btn-sm bespoke-button' style={{borderRadius: '10', border: 0, margin: 0, padding: 10}}>
+                <Button classNames='' variant='btn-sm bespoke-button' style={{borderRadius: '10', border: 0, margin: 0, padding: 10}} onClick={() => setFullscreen(!fullscreen)}>
                 
-                   <img src={'static/UI/fullscreen.png'} height={12} width = {12} onClick={() => <Window />}/>
+                   <img src={'static/UI/fullscreen.png'} height={12} width = {12} />
                    
                 
                 </Button>
@@ -99,6 +113,7 @@ return (
 
             
             </div>
+             </div>
 	);
 
 }

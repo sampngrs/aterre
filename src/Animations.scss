@@ -69,7 +69,6 @@
 }
 .dropdown-exit {
    max-height:2000px;
-
   
 }
 
@@ -78,3 +77,35 @@
   overflow: hidden;
   transition: max-height 500ms ease-out;
 }
+
+
+.left-expand-enter {
+  opacity: 0;
+  transform: 
+/*    translate(-700px, 0) */
+    scale(.2);
+  
+}
+.left-expand-enter-active {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+  transition: all 200ms ease-out;
+}
+.left-expand-exit {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+.left-expand-exit-active {
+  opacity: 0;
+  transform: translate(0, 0) scale(1.5);
+  transition: all 100ms ease-in;
+}
+
+
+
+
+
+
+
+
+

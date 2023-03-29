@@ -64,7 +64,7 @@ function MainScreen () {
   const [proximityTr, setProximityTr] = useState([]);
   const [searchErrorAlert, setSearchErrorAlert] = useState(false);
   const [aboutActive, setAboutActive] = useState(false);
-  const [crimeData, setCrimeData] = useState([]);
+  const [crimeData, setCrimeData] = useState([{id:'', title:''}]);
   const nodeRef = useRef(null);
 
   const inputRef = useRef();
@@ -108,7 +108,7 @@ function MainScreen () {
           else return response.json()
       })
       .then((result) => {
-        console.log(result)
+
         var data = result.map((dataPoint) => {
           dataPoint['data'] = JSON.parse(dataPoint['data']).map((key) => ({
           //   'WardName': key.WardName,
@@ -140,7 +140,6 @@ function MainScreen () {
         // console.log(result)
         
         
-
         setCrimeData(result)
       
 
@@ -295,7 +294,7 @@ function MainScreen () {
             <About setActive={setAboutActive} active={aboutActive}/>
 
       
-           
+
       <ControlPanel 
       map = {mapRef.current} 
       controlProps = {controlProps} 
