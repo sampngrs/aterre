@@ -3,6 +3,7 @@ def get_current_time():
 	return{'time': time.time()}
 from datetime import datetime
 import json
+import math
 from flask import Flask, redirect
 import requests
 import pandas as pd
@@ -70,10 +71,10 @@ def get_transport(lat, lon):
 	);
 	out center;
 	>;
-	""".format("(around: 500, {0}, {1} )".format(lat,lon), "(around: 1000, {0}, {1} )".format(lat,lon))
+	""".format("(around: 1000, {0}, {1} )".format(lat,lon), "(around: 1000, {0}, {1} )".format(lat,lon))
 
 	response = requests.get(overpass_url, params={'data': overpass_query})
-	data = response.json()
+	data = response.json() 
 	data['search'] = {
 	'time': '',
 	'location':{
@@ -81,9 +82,17 @@ def get_transport(lat, lon):
 	"lon": lon 
 	}}
 	type(data)
-	
+    
 	results = rg.search((lat, lon)) # default mode = 2
-	print(results)
+	
+	for x, i in enumerate(data['elements']):
+		if ('public_transport' in i['tags']):
+			if i['tags']['name'] in [os.path.splitext(x)[0] for x in os.listdir('static/Data/Sets/Transport')]: 
+				bbb = pd.read_excel(f"static/Data/Sets/Transport/{i['tags']['name']}.xlsx",index_col=0)
+				data['elements'][x]['crowding'] = [{'time': x[0:4], 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
+				print(data['elements'][x]['crowding'])
+		if(i['type'] == 'node'):
+			data['elements'][x]['bearing'] = calc_bearing(float(lat), float(lon), data['elements'][x]['lat'], data['elements'][x]['lon'] )            
 
 	return data
 
@@ -98,30 +107,35 @@ def get_transport(lat, lon):
 @app.route('/access/<code>')
 def get_proximity(code):
 	
-	filename = os.path.join(app.static_folder, 'Data', 'stops.json')
+	filename = os.path.join(app.static_folder, 'Data', 'stops_new.json')
 
+		
 	with open(filename) as test_file:
-	    data = json.load(test_file)
+		data = json.load(test_file)
 
-
-	result = {}
-
+	timingList = []
+        
 	for x in code.split(','):
-
+		
 		if x not in data:
 			continue
-
+			
 		timings = bfs(data, x)
-
 		df = pd.DataFrame.from_dict(timings[1], orient='index', columns = ['time'])
 		ass = pd.DataFrame.from_dict(data, orient='index')
 		ass = ass.drop(('adj'), axis = 1)
 
 		df = pd.concat([ass, df], axis = 1, join = "inner")
+		timings = pd.DataFrame(df.groupby(['time'])['time'].count())
+		timings.rename(columns={"time": x}, inplace=True)
+		timingList.append(timings)
+		
+	frame = pd.concat(timingList, axis=1).fillna(0)
 
-		timings = df.groupby(['time'])['time'].count().to_json(orient="index")
+	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
 
-		result[x] = {'name': data[x]['name'], 'data': timings}
+	result = {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
+	'data': [{'time': x, 'data': y} for x, y in form_dic.items()]}
 
 	# return {'response': 'error'}, 504
 
@@ -139,21 +153,26 @@ def get_crime(lat,lon):
 	filename = '{}.csv'.format(area['Ward'].replace('.', ''))
 	print(filename)
 	# return pd.read_csv('static/crime/{}'.format(filename)).to_json(orient='records')
+	
+	# Integrate looping through file system to find data rather than it being hardcoded. 
+	
 	return [
 	{
 	'id': 'crime', 
-	'title': 'Recorded Crime', 
+	'title': 'Crime by Type', 
+    'area': area['Ward'].replace('.', ''),
 	'data': parse_data(sort_data(flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward'].replace('.', ''))))).to_json(orient='columns'))}
 	, 
 	{
 	'id': 'jobs', 
 	'title': 'Employment by Sector', 
+	'area': area['Borough'].replace('.', ''),
 	'data': parse_data(sort_data(pd.read_csv("static/Data/Sets/Jobs/Borough/{}.csv".format(area['Borough'])).drop('Unnamed: 0', axis = 1)).to_json(orient='columns'))}
 	]
 
+
 def flatten(data):
 	x = data.groupby(['LookUp_BoroughName','WardCode', 'WardName', 'MajorText']).sum().drop('Unnamed: 0', axis = 1).reset_index()
-	print(x)
 	return x
 
 def bfs(Adj, s):  # Adj: adjacency list, s: starting vertex
@@ -166,7 +185,8 @@ def bfs(Adj, s):  # Adj: adjacency list, s: starting vertex
         frontier = []  # O(1), make new level
         for u in levels[-1]:  # O(?) loop over last full level
             for v in Adj[u]['adj']:  # O(Adj[u]) loop over neighbors
-                if parent[v] is None:  # O(1) parent not yet assigned
+                if Adj[u]['adj'][v]['time'] is not None and (parent[v] is None or (dist[u] + Adj[u]['adj'][v]['time'] < dist[v])):  # O(1) parent not yet assigned
+#                 if parent[v] is None:  # O(1) parent not yet assigned
                     parent[v] = u  # O(1) assign parent from levels[-1]
                     
                     if Adj[u]['adj'][v]['time'] is not None: 
@@ -177,6 +197,7 @@ def bfs(Adj, s):  # Adj: adjacency list, s: starting vertex
                     frontier.append(v)  # O(1) amortized, add to border
         levels.append(frontier)  # add the new level to levels
     return parent, dist
+
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
@@ -210,3 +231,27 @@ def sort_data(data):
 def shutdown():
     shutdown_server()
     return 'Server shutting down...'
+
+
+
+
+def calc_bearing(lat1, long1, lat2, long2):
+  # Convert latitude and longitude to radians
+  lat1 = math.radians(lat1)
+  long1 = math.radians(long1)
+  lat2 = math.radians(lat2)
+  long2 = math.radians(long2)
+  
+  # Calculate the bearing
+  bearing = math.atan2(
+      math.sin(long2 - long1) * math.cos(lat2),
+      math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(long2 - long1)
+  )
+  
+  # Convert the bearing to degrees
+  bearing = math.degrees(bearing)
+  
+  # Make sure the bearing is positive
+  bearing = (bearing + 360) % 360
+  
+  return bearing

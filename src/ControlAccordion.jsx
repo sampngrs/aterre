@@ -14,10 +14,16 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Stack from 'react-bootstrap/Stack';
 import Pagination from 'react-bootstrap/Pagination'
-
+import { CSSTransition } from 'react-transition-group';
 import DataSelector from './DataSelector.jsx'
 import  Paginate from './Paginate.jsx';
-import Portrait from './Portrait.jsx';
+import Portrait from './Portrait copy';
+
+import Grid from './Grid';
+import GridItem from './GridItem';
+import './Grid.css'
+
+import _ from 'lodash';
 
 import chroma from 'chroma-js';
 
@@ -37,20 +43,24 @@ import { ResponsiveContainer,
   Cell
 } from 'recharts';
 
-import {VictoryChart, VictoryBar, VictoryTooltip, VictoryPie, VictoryVoronoiContainer, VictoryLabel, VictoryTheme, VictoryArea, VictoryAxis, VictoryStack} from 'victory';
+import {VictoryChart, VictoryBar, VictoryTooltip, VictoryPie, VictoryVoronoiContainer, VictoryLabel, VictoryTheme, VictoryArea, VictoryAxis, VictoryStack, Data} from 'victory';
 // import Accordian from './accordian.jsx'
 
 import './App.scss';
+import MultiSelector from './MultiSelector';
 
 function ControlAccordion(props){
 
   const { timingData } = props; 
   const { stations } = props;
   const { crimeData } = props
+  console.log(timingData)
+
+  const reformat = {}
   
 
   const [filteredFood, setFilteredFood] = useState('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';'))
-  
+  const categories = [... new Set(props.stations.filter((cat) => (!!cat.tags.amenity)).map((cat) => cat.tags.amenity))]
   const tab_names = 
   [{name: 'Food', data: props.stations.filter(data => (!!data.tags.amenity) && (filteredFood.includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'amenity'}, 
     {name: 'Schools', data: props.stations.filter(data => (!!data.tags.amenity) && (['university', 'school'].includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'school' }, 
@@ -110,7 +120,7 @@ function ControlAccordion(props){
   }
 
   let colors = ['black', 'red', 'navy', 'green', "orange", "yellow"];
-
+  
   colors = [
 // "#ffffff", 
 "#dfdfdf",
@@ -128,7 +138,7 @@ function ControlAccordion(props){
 
   const neighbourhoodTabs = tab_names.map((item) =>
 
-    <Tab eventKey={item.name} title={item.name} fill onEnter={() => (setActiveTab(item.name), props.setMarkers(item.data), setFilteredFood(data.map((item) => item.x)))}>
+    <Tab className="pillTab" tabClassName="square rounded-1" eventKey={item.name} style={{borderRadius:'0'}} title={item.name} fill onEnter={() => (setActiveTab(item.name), props.setMarkers(item.data), setFilteredFood(data.map((item) => item.x)))}>
 
 
 {item.name == 'Food' ? 
@@ -184,8 +194,13 @@ function ControlAccordion(props){
     );
 
   let timer;
+
+  const [selCat, setSelCat] = useState(null)
+
+  let scale = chroma.scale(['#373B44', '#4286f4']).mode('lch').colors(Object.values(timingData).length > 0 ? Object.values(timingData.legend).length : 2)
+
   return (
-   <Accordion className="controlAccordion" flush >
+   <Accordion className="controlAccordion" flush>
    <Accordion.Item eventKey="0" isDisabled>
 
    <AccordionButton disabled = {!(props.transport.length > 0)} /*style={{backgroundColor:'whitesmoke'}}*/ className="accordion-button-disabled">
@@ -200,31 +215,49 @@ function ControlAccordion(props){
         {/*{(this.props.stations.length > 0) && <p style = {{fontSize: 15}}> From this location, you could reach a total of {this.props.stations.length} different stations and {lines.length} different lines. </p> }*/}
 
   <DataSelector titles ={[{'title' : 'Travel Time'}]} dropdown = {false}/>
-   <div style={{position:'relative'}}> 
+   <div className ='hoverPop' style={{position:'relative', width: '100%',  paddingBottom:5, paddingLeft: 0}}> 
    <div className = 'centered' style ={{position: 'absolute', width:'100%', height:'90%'}}> 
-
    {timingData.length == 0 ?
     <span style = {{fontSize: 12, color:'black', zIndex:1, opacity:0.5}} className ='centered'> Sorry, our transport timing data <br /> currently only works with the <br /> Underground and DLR services. </span> : null }
 
     </div>  
-   <VictoryChart 
-   theme={VictoryTheme.material}  width={400} padding={50} 
-            // maxDomain={{ x: 65 }}
-   >
 
-   {
-    timingData.map((node, index) => 
-      <VictoryArea data={node.data} x="time" y="stops" style={{ data: { fill: colors[(colors.length - index)] } }}/> 
+    <AreaChart
+     margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
+     width = {260} height = {200}
+      data={timingData.data}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
 
-      )
-  }
+ {Object.values(timingData).length > 0 ? 
+Object.values(timingData.legend).map((x, index) => 
+  
 
-   {/*<VictoryArea data={timingData[Object.keys(timingData)[1]].data} x="time" y="stops" style={{ data: { fill: "#000000" } }}/>
-   <VictoryArea data={timingData[Object.keys(timingData)[0]].data} x="time" y="stops" style={{ data: { fill: "#c43a31" } }}/>*/}
+  <Area type="linear" dataKey={`data[${index}]`} stackId={`${index}`} fillOpacity={1}  stroke='' fill={scale[index]}          // fill={`RGB(${ index * 15}, 0, 0)`}
+            />) : null}
+          
+      <XAxis 
+          dataKey="time" 
+          allowDuplicatedCategory={true} 
+          height={20} 
+          tick={{fill: 'black', fontSize: 9}} />
+
+          <YAxis 
+          tickSize={3} 
+          tick={{fill: 'black', fontSize: 9}} 
+          tickFormatter={(t) => t} 
+          width={30}/>
+    </AreaChart>
 
 
-  <VictoryAxis/>
-  </VictoryChart>
+
+   {console.log(stations)}
+  {/* <Portrait color='blue' crimeData = {timingData} /> */}
+
+
+   
+
+
   
   </div> 
   <div   
@@ -234,6 +267,7 @@ function ControlAccordion(props){
   //           console.log('goodbye')
   //          }, 1000)}
   //   }
+  style={{}}
     >
     <Paginate items = {lines_disp} length = {4}/>
   
@@ -256,6 +290,8 @@ function ControlAccordion(props){
 
     )}>
 
+
+<div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'10px'}}>
   {/*
 
   Create a 'portrait' element, which creates a title bar and graph instance. 
@@ -265,14 +301,126 @@ function ControlAccordion(props){
   <Portrait color='red' crimeData = {props.crimeData} /> 
 
   
-  <br/>
-  <Tabs unmountOnExit activeTab={activeTab} variant="pills" justify style={{fontSize: 10, borderRadius: 5}}>
+
+
+  {/* <Tabs unmountOnExit activeTab={activeTab} variant="pills" justify style={{fontSize: 10, borderRadius: 5}}>
 
   {neighbourhoodTabs}
 
-  </Tabs>
+  </Tabs> */}
 
 
+  {
+
+  
+  (selCat) 
+  
+  ? 
+
+  <div style={{width:'100%', zIndex:1}} >
+    <div style={{overflow:'visible', display:'flex', alignItems:'center', marginBottom:'10px'}}> 
+    <div className='hideScrollbar' style={{padding:'5px 0px 5px 0px', marginLeft:'10px', display:'flex', width:'100%', whiteSpace:'nowrap', overflowX:'scroll', overflowY:'hidden'}} >
+    {categories.map((cat) =>  <t className ={ cat == selCat ? 'bshadow' : 'ListItem'} style={{fontSize:'14px', cursor:'pointer', borderRadius:'3px', margin:'5px', padding:'5px 10px 5px 10px', color: cat == selCat ?  'white': 'black', backgroundColor: cat == selCat ? 'black' : ''}} onClick={() => setSelCat(cat)}>{_.startCase(cat)}</t> )}
+    </div>
+    {/* <b style={{margin:'5px', borderRadius:'3px', padding: '5px'}}> X </b>  */}
+    <img style={{cursor:'pointer', margin: '10px'}} src={'static/UI/close.svg'} height={'15px'} width = {'15px'} onClick={() => setSelCat(null)}/>
+    </div>
+  
+  {/* <p style={{width:'100%', textAlign:'center'}}onClick={() => setSelCat(null)}>{_.startCase(selCat)}</p>  */}
+
+<Paginate items=
+    {
+    stations.filter(data => data.tags.amenity == selCat).map((school) => 
+
+    <div style={{
+      display:'flex',
+      margin:'10px 15px 10px 15px', 
+      flexDirection:'row',
+      alignItems:'flex-start',
+      gap:'10px'}}> 
+
+          <img src={'static/amenity/' + selCat +'.svg' } height='15px' width = '15px' />
+
+          
+          <div style={{
+          display:'flex',
+          flexDirection:'column',
+          flexGrow:'4'}}>
+          
+              <div style={{
+              display:'flex',
+              alignItems:'center',
+              justifyContent:'space-between',
+              flexDirection:'row'}}>
+                
+                <span style={{fontSize: 11}}> {school.tags.name} </span>  
+                <span style={{fontSize: 9, flex: '0 0 auto'}}> {(Math.round(school.distance * 100) / 100).toFixed(2) + ' km'} </span>
+
+              </div> 
+              
+              <div className='shrinks-child' style={{
+              display:'flex',
+              alignItems:'center',
+              justifyContent:'flex-start',
+              flexDirection:'row'}}>
+                
+                
+                  {(school.tags['addr:housenumber']) ? 
+                  <span style={{fontSize: 9, whiteSpace:'nowrap', textOverflow:'ellipsis'}}>
+                  
+                  {`${school.tags['addr:housenumber']}, ${_.startCase(_.toLower(school.tags['addr:street']))}`} 
+                  
+                  </span> : null
+                }
+
+                {(school.tags.cuisine && school.tags['addr:housenumber']) ? 
+                  <span style={{margin:'0px 5px 0px 5px', fontSize: 9}}>
+                  
+                  {`·`} 
+                  
+                  </span> : null
+                }
+
+                {(school.tags.cuisine) ? 
+                  <span style={{fontSize: 9}}>
+                  
+                  {`${_.startCase(_.startCase(school.tags.cuisine))}`} 
+                  
+                  </span> : null
+                }
+
+                
+
+              </div> 
+
+          </div> 
+
+    </div> 
+
+    
+
+    )} />
+    
+  </div>
+  
+  
+  : 
+    
+  <Grid>
+    {categories.map((item) =>
+      <GridItem key={item} category={item} onClick={setSelCat}>
+        {/* <img style={{fill:'white', color:'white'}} src={'static/amenity/' + item +'.svg'} height='25px' width = '25px' fill='white' color='white'/> */}
+        <svg style={{height:'20px', width:'20px'}}>
+          <use href={'static/amenity/' + item +'.svg#' + item }></use>
+        </svg>
+        {/* <t style={{fontSize:'12px'}}>{_.startCase(item)}</t> */}
+      </GridItem>
+    )}
+  </Grid>
+
+  }
+
+  </div>
   </Accordion.Body>
   </Accordion.Item>
   <Accordion.Item eventKey="2">
@@ -359,7 +507,78 @@ function arrayTest(array, item) {
 }
 
 function TransportItem(props) {
+  const [showGraph, setShowGraph] = useState(false)
+
+
+  const data = [
+    {
+      name: 'Sun',
+      entrance: Math.random() * 1000,
+      average: 200,
+    },
+    {
+      name: 'Mon',
+      entrance: Math.random() * 1500,
+      average: 300,
+    },
+    {
+      name: 'Tue',
+      entrance: Math.random() * 1800,
+      average: 360,
+    },
+    {
+      name: 'Wed',
+      entrance: Math.random() * 1900,
+      average: 380,
+    },
+    {
+      name: 'Thu',
+      entrance: Math.random() * 2000,
+      average: 400,
+    },
+    {
+      name: 'Fri',
+      entrance: Math.random() * 2200,
+      average: 440,
+    },
+    {
+      name: 'Sat',
+      entrance: Math.random() * 1200,
+      average: 240,
+    }
+  ];
+  
+  
+  
+  
+  
+  
+
+
+  const chart = (interval) => (
+    <ResponsiveContainer height='100%' width="100%">
+      <LineChart data={props.data.crowding} margin={{ right: 0, top: 0 }}>
+      <Legend
+              verticalAlign="top"
+              height={5}
+              layout='horizontal'
+              align="right"
+              iconType="plainline"
+              wrapperStyle={{fontSize:10, top:-20, right: -10}}
+            />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="time" interval={interval} tick={{fill: 'white', fontSize: 9}} height={20}/>
+        <YAxis interval={interval} tick={{fill: 'white', fontSize: 9}} width={30} />
+        <Line name = 'Ridership' type="monotone" dataKey="value" stroke="white" dot={false} />
+        <Line name = 'Average' type="monotone" dataKey="mean" stroke="red" dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+
+
   return (
+
+    
     <div style={{marginBottom:'10px'}} 
     // onMouseEnter={() => props.map.flyTo(props.map.getCenter(), 12, {animate:true})}
     // onMouseLeave={() => 
@@ -367,20 +586,81 @@ function TransportItem(props) {
     //    props.map.flyTo(props.map.getCenter(), 16, {animate:true})
     //   }, 1000)
     // }
+    
     >
 
-    <Container fluid style={{paddingLeft:0}}>
-    <Row>
-    <Col > <span style = {{fontSize: 14}}> {props.data.tags.name} </span>  </Col>
-    <Col md ='auto'> <span style={{fontSize: 10}}> {(Math.round(props.data.distance * 100) / 100).toFixed(2) + ' km'} </span> </Col>
-    </Row> 
-    </Container>
 
+          <CSSTransition
+           in={showGraph}
+           timeout={200}
+           classNames='transportModal'
+           unmountOnExit
+           >
+           
+           <div className='bshadow'
+            onMouseEnter={()=>setShowGraph(true)}
+            onMouseLeave={()=>setShowGraph(false)}
+           style={{bottom:'20px',
+              display:'flex', 
+                padding:'5px',
+                flexDirection:'column', 
+                gap:'5px', 
+                alignItems:'center',
+                borderRadius:'3px', 
+                position:'absolute', 
+                backgroundColor:'black', 
+                zIndex:2, 
+                width:'280px', 
+                height:'150px'}}>
+                
+              <span style = {{fontSize: 14, paddingLeft:'5px', color:'white', width:'100%'}}> {props.data.tags.name} </span>
+                <div style={{width:'95%', height:'75%', borderRadius:'1px'}}>
+                {chart('preserveStart')}
+                </div>
+              </div>
+            </CSSTransition>
+  
+
+    <div style={{marginTop:'10px', display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between'}}>
+      
+     <div style ={{display:'flex', flexDirection:'row', alignItems:'center', gap:'10px'}}>
+          <span style = {{fontSize: 14, paddingLeft:'5px'}}> {props.data.tags.name} </span>
+
+              
+          <div style ={{display:'flex', gap:'10px', alignItems:'center'}}> 
+          
+                <svg style={{height:'12px', width:'12px', color:'black', transform: `rotate(${props.data.bearing}deg)`}}>
+
+                  <use href={'static/UI/bearing.svg#bearing'}></use>
+
+                </svg>  
+
+                <span style={{fontSize: 8}}> {(Math.round(props.data.distance * 100) / 100).toFixed(2) + ' km'} </span>
+
+              </div> 
+
+          </div>
+          {(props.data.crowding)
+          ?
+          <svg 
+          onMouseEnter={()=>setShowGraph(true)}
+          onMouseLeave={()=>setShowGraph(false)}
+          style={{height:'12px', width:'12px', marginRight:'10px', transform:showGraph ? 'scale(1.2) rotate(45deg)' : ''}}>
+                        <use href={'static/UI/plus.svg#plus'}></use>
+          </svg>
+          :
+          null
+          }
+          
+          
+
+    </div>
+    {console.log(props.data)}
     {(props.data.tags.line) ? 
 
     (props.data.tags.line.split(';').map((item) => 
-      <div> 
-
+      <div style={{zIndex:1}}> 
+      
       <Container fluid style={{marginBottom:'4px'}}>
       <Row>
       <Col md ='auto' > { <img src={('static/' + 'railway' + '/' + ((props.data.tags.station == 'subway') ? 'subway' : 'station') + '.png')} height='9.76px' width = '12px' />} </Col>

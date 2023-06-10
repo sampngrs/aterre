@@ -42,19 +42,28 @@ function Portrait (props) {
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
-    const { crimeData = [{'data': 0}] } = props;
+    const { crimeData = [] } = props;
     const [fullscreen, setFullscreen] = useState(false)
     
     const { color = 'red' } = props;
     const [activeKey, setActiveKey] = useState(0)
 
-    let activeData = (crimeData[0].data) ? crimeData[0].data.sub_data : null
-    let areaColors = activeData ? chroma.scale('OrRd').padding([0.4, 0]).colors(Object.values(crimeData[activeKey].data.MajorText).length ) : null;
+    const [activeData, setActiveData] = useState(null) 
+    
 
+
+    let areaColors = crimeData[activeKey].data.MajorText ? chroma.scale('OrRd').padding([0.4, 0]).colors(Object.values(crimeData[activeKey].data.MajorText).length ) : null;
+
+    useEffect(() => {
+      setActiveData((crimeData[activeKey].data.sub_data) ? Object.values(crimeData[activeKey].data.MajorText).map((x, index) => ({'index': index, 'value': x, active: true, 'color': areaColors[index]})) : null)
+      console.log('crimeData')
+    }, [crimeData, activeKey])
+
+    console.log(crimeData)
     const graph = 
 
     (activeData) ? 
-    <div style = {{width: '100%', height: '200px', paddingTop:10, margin: 0}}>
+    <div onClick={() => setFullscreen(!fullscreen)} className='hoverPop' style = {{width: '100%',  paddingBottom:5, paddingLeft: 5, marginTop: 5}}>
 
         <AreaChart
           data={crimeData[activeKey].data.sub_data}
@@ -77,7 +86,14 @@ function Portrait (props) {
           width={30}/>
 
           {/*{(crimeData) ? crimeData[0].data.sub_data.map((num, index) => console.log(index)) : null}*/}
-          {Object.values(crimeData[activeKey].data.MajorText).map((num, index) => <Area type="linear" name={num} dataKey={`data[${index}]`} stackId='1' fillOpacity={1} stroke = {chroma(areaColors[index]).darken()} fill={areaColors[index]} 
+          {/* {Object.values(crimeData[activeKey].data.MajorText).map((num, index) => <Area type="linear" name={num} dataKey={`data[${index}]`} stackId='1' fillOpacity={1} stroke = {chroma(areaColors[index]).darken()} fill={areaColors[index]} 
+            // fill={`RGB(${ index * 15}, 0, 0)`}
+            />)} */}
+          {/* {Object.values(activeData.filter((item) => item.active == true)).map((x) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId='1' fillOpacity={1} stroke = {chroma(x.color).darken()} fill={x.color} 
+            // fill={`RGB(${ index * 15}, 0, 0)`}
+            />)} */}
+
+{Object.values(activeData).map((x) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId='1' fillOpacity={1} stroke = {chroma(x.color).darken()} fill={x.color} 
             // fill={`RGB(${ index * 15}, 0, 0)`}
             />)}
 
@@ -97,7 +113,11 @@ return (
 
       <DataSelector 
       
+      //Should get rid of in future. 
       titles = {crimeData.map((item) => ({'title': item.title, 'id': item.id}))} 
+
+      data = {(activeData) ? crimeData[activeKey] : []}
+  
       activeKey = {activeKey} 
       setActiveKey = {setActiveKey} 
       fullscreen = {fullscreen} 
@@ -105,7 +125,8 @@ return (
       children={graph}
       items={(activeData) ? Object.values(crimeData[activeKey].data.MajorText) : []}
       items_obj = {(activeData) ? Object.values(crimeData[activeKey].data.MajorText).map((x, index) => ({'value': x, active: true, 'color': areaColors[index]})) : []}
-
+      setActiveData={setActiveData}
+      activeData={activeData}
       />
 
       {graph}
@@ -118,12 +139,12 @@ return (
 
 function flatten(data) {
   const Card = (rank, suit) => { return { rank: rank, suit: suit } }
-  const Occ = (name, code, major, borough, data) => { return {name: name, 
+  const Occ = (name, code, major, borough, data) => {return {name: name, 
                                                                     code: code, 
                                                                     major: major, 
                                                                     borough: borough,
                                                                     data: data
-                                                                  } }
+                                                                  }}
   
     const result = []
     data.map((obj) => {

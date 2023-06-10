@@ -20,6 +20,30 @@
   transition: all 500ms ease-out;
 }
 
+
+/* > Icon 180 Animation */
+
+.oneeighty-enter {
+}
+
+.oneeighty-enter-active {
+  transform: rotate(-180deg);
+ transition: all 200ms ease-out;
+}
+
+.oneeighty-enter-done {
+  transform: rotate(180deg);
+}
+.oneeighty-exit {
+  transform: rotate(-180deg);
+}
+
+.oneeighty-exit-active {
+  transform: rotate(0deg);
+ transition: all 200ms ease-out;
+}
+
+
 /* Page Fade Animation */
 
 .fade-enter{
@@ -69,12 +93,11 @@
 }
 .dropdown-exit {
    max-height:2000px;
-  
 }
 
 .dropdown-exit-active {
   max-height: 0px;
-  overflow: hidden;
+  overflow:hidden;
   transition: max-height 500ms ease-out;
 }
 

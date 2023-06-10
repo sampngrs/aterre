@@ -15,9 +15,9 @@ import Tabs from 'react-bootstrap/Tabs';
 import Stack from 'react-bootstrap/Stack';
 import Pagination from 'react-bootstrap/Pagination'
 
-import DataSelector from './DataSelector.jsx'
-import  Paginate from './Paginate.jsx';
-import Portrait from './Portrait.jsx';
+import DataSelector from '../DataSelector.jsx'
+import  Paginate from '../Paginate.jsx';
+import Portrait from '../Portrait.jsx';
 
 
 import {VictoryChart, VictoryBar, VictoryTooltip, VictoryPie, VictoryVoronoiContainer, VictoryLabel, VictoryTheme, VictoryArea, VictoryAxis, VictoryStack} from 'victory';

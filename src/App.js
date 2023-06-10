@@ -34,7 +34,7 @@ import About from './About.jsx'
 function SetViewOnClick({ animateRef }) {
   const map = useMapEvent('click', (e) => {
     map.setView(e.latlng, map.getZoom(), {
-      animate: animateRef.current || true,
+      animate: animateRef.current || false,
     })
   })
 
@@ -98,7 +98,7 @@ function MainScreen () {
   useEffect(() => {
 
     if ((!!location) && (!!mapRef.current)){
-      mapRef.current.flyTo(location, 16, {animate:true})
+      mapRef.current.flyTo(location, 16, {animate:false})
 
     }
 
@@ -203,7 +203,8 @@ function MainScreen () {
       // console.log(cData)
       // setTransportCL(data.elements)
       // setIsLoading(false)
-
+      console.log(data)
+      setProximityTr(data)
       const obj = Object.keys(data).map((key) => ({
         'stop': key, 
         'name': data[key].name,
@@ -211,7 +212,7 @@ function MainScreen () {
       }))
       // const arrData = Object.keys(obj).map((key) => [Number(key), obj[key]]);
       // const arrData = Object.keys(obj).map((key) => ({'time': Number(key), 'stops': obj[key]}))
-      setProximityTr(obj)
+      
     }) : console.log()
 
   }, [transportCl]); 
@@ -294,37 +295,30 @@ function MainScreen () {
       </header>
 
 
-      <Navbar className='shadow' fixed variant="light" style={{backgroundColor: 'white'}}>
+      {/* <Navbar className='shadow' fixed variant="light" style={{backgroundColor: 'white'}}>
         <Container fluid>
           <Navbar.Brand href="#home"><img src="/static/logo.png" width='60' height ='60' style={{marginLeft: 8}}/></Navbar.Brand>
           <Nav className="auto">
             <Nav.Link href="#home">Home</Nav.Link>
             <Nav.Link href="#features">Insights</Nav.Link>
             <button type="button" class="btn btn-link nav-link" onClick={() => setAboutActive(!aboutActive)}>About</button>
+            <div style={{width:'10px', height:'10px', backgroundColor:'black'}}>S</div>
           </Nav>
         </Container>
-      </Navbar>
+      </Navbar> */}
 
-      {/*<CSSTransition
-           in={aboutActive}
-           timeout={200}
-           classNames="grey"
-           unmountOnExit
-           >
-          <div className = "grey" onClick ={() => setAboutActive(false)}> </div>  
-           </CSSTransition>*/}
+      <div className='bshadow' style={{
+        display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0px 20px',
+        position:'absolute', backgroundColor:'#FFFFFFBE', height:'90px', width:'100%'}}>
+        <img src="/static/logo.png" width='60' height ='60' />
+        <div style={{display:'flex', alginItems:'center', gap:'15px'
+           }}>
+            <span className='textButton' >Home</span>
+            <span className='textButton' >Insights</span>
+            <span className='textButton' onClick={() => setAboutActive(!aboutActive)}>About</span>
 
-{/*      <CSSTransition
-           in={aboutActive}
-           ref={nodeRef}
-           timeout={200}
-           classNames="about"
-           unmountOnExit
-           >
-            <About setActive={setAboutActive} active={aboutActive}/>
-
-           </CSSTransition>*/}
-
+        </div>
+      </div>
       
             <About setActive={setAboutActive} active={aboutActive}/>
 
@@ -343,6 +337,8 @@ function MainScreen () {
       setMarkers={setMarkers} 
       crimeData={crimeData}
       />
+
+      <div style={{height:'90px'}}></div>
 
       <MapContainer ref={mapRef} center = {location} zoom={17} scrollWheelZoom={false} zoomControl ={false}>
 

@@ -13,9 +13,9 @@ $nav-link-font-size:  5;
 @import "../node_modules/bootstrap/scss/bootstrap";
 
 .btn-outline-dark-custom { 
- color: #000000; 
+ color: #000000;
  background-color: #FFFFFF00; 
- border-radius: 100px;
+//  border-radius: 100px;
  
 } 
 
@@ -24,6 +24,16 @@ $nav-link-font-size:  5;
   background-color: #000000; 
   border-width: 1px;
   border-color: black; 
+}
+
+.shrinks-child {
+  flex: 1;
+  min-width: 0; /* or some value */
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 
@@ -35,6 +45,10 @@ $nav-link-font-size:  5;
 .blur {
   backdrop-filter: blur(100px);
   opacity:0.8 ;
+}
+
+.bshadow {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
 
@@ -81,6 +95,14 @@ $nav-link-font-size:  5;
   border-color: grey;
 }
 
+.legendBox {
+  background: rgba(51, 170, 51, 0);
+  outline: 0;
+  border-width: 0px;
+  border-radius: 4px;
+  border-color: grey;
+}
+
 .typeBox, .searchField {
   color: black;
   margin:auto;
@@ -97,6 +119,7 @@ $nav-link-font-size:  5;
 .searchField:hover, .searchField:focus-within, .multiBox:hover, .multiBox:focus-within {
   border-color: black;
 }
+
 
 
 .searchBar {
@@ -139,6 +162,7 @@ $nav-link-font-size:  5;
   border-radius: 15px;
   flex: 1;
   width: 100%;
+  
 }
 
 .knh {
@@ -169,6 +193,15 @@ $nav-link-font-size:  5;
   margin-left: 20px;
 }
 
+.text-button {
+  color:'grey';
+  cursor:'pointer';
+}
+
+.text-button:hover {
+  color:'black';
+}
+
 .appHome {
   margin-top: 90px;
   margin-left: 17px;
@@ -180,6 +213,7 @@ $nav-link-font-size:  5;
   width: 100%;
   position:fixed ;
   height: calc(100vh - 90px);
+  margin-top: '180px';
 /*  height: 100vh;*/
 z-index: -1;
 }
@@ -196,6 +230,7 @@ z-index: -1;
 .panel-heading.collapsed .glyphicon-chevron-down {
   transform:rotateX(0deg);
 }
+
 .panel-heading .glyphicon-chevron-down {
   transition:transform 20s;
   transform:rotateX(0deg);
@@ -210,6 +245,73 @@ background-image: none !important;
   
   button-active-color: red !important;
   button-background-color: red !important;
+}
+
+.GridItem {
+  display: flex;
+  font-size: 10px;
+  justify-content: center;
+  align-items: center;
+  border: solid;
+  border-width: 1px;
+  border-radius: 3px;
+  border-color: black;
+  color:black;
+  transition: all .1s ease-in-out;
+}
+
+.GridItem:hover {
+  display: flex;
+  color:white;
+  background-color: black;
+  transform: scale(1.05);
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+.hoverPop {
+  padding-top: 20px;
+  transition: all .1s ease-in-out;
+  border: 1px solid #00000000;
+}
+
+.hoverPop:hover {
+  transform: scale(0.98);
+  // border: 1px solid #c6c6c6;
+  border-radius: 3px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  
+}
+
+.textButton {
+  color:grey;
+  cursor: pointer;
+  transition: all .1s ease-in-out;
+  // border: 1px solid #00000000;
+}
+
+.textButton:hover {
+  color:black;
+    // border-radius: 3px;
+  // box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  
+}
+
+.ListItem {
+  transition: all .1s ease-in-out;
+}
+
+.ListItem:hover {
+  background-color: rgb(238, 236, 236);
+  
+}
+
+.blackbox {
+  transition: all .3s ease-in-out;
+}
+
+.blackbox:hover {
+  transform: scale(1.01);
+  background-color: rgb(56, 56, 56);
 }
 
 
@@ -291,7 +393,7 @@ text-align:center;
 .about-enter-active {
   opacity: 1;
   transform: translate(0, 0);
-  transition: all 100ms ease-out;
+  transition: all 200ms ease-out;
 }
 .about-exit {
   opacity: 1;
@@ -300,7 +402,52 @@ text-align:center;
 .about-exit-active {
   opacity: 0;
   transform: translate(0, -50px);
-  transition: all 100ms ease-in;
+  transition: all 200ms ease-in;
+  
+}
+
+
+.transportModal-enter {
+  opacity: 0;
+  transform: translate(0, -10px);
+  
+}
+.transportModal-enter-active {
+  opacity: 1;
+  transform: translate(0, 0);
+  transition: all 200ms ease-out;
+}
+.transportModal-exit {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+.transportModal-exit-active {
+  opacity: 0;
+  transform: translate(0, -10px);
+  transition: all 200ms ease-in;
+}
+
+.fadeIn-enter {
+  opacity: 0;
+  
+}
+.fadeIn-enter-active {
+  opacity: 1;
+  
+  transition: all 1000ms ease-out;
+}
+.fadeIn-exit {
+  opacity: 1;
+  transition: all 1000ms ease-in;
+}
+.fadeIn-exit-active {
+  opacity: 0;  
+  transition: all 1000ms ease-in;
+}
+.fadeIn-exit-done {
+  opacity: 0;
+  visibility: hidden;
+  
 }
 
 .grey-enter {

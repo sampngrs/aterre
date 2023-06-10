@@ -16,7 +16,7 @@ function Paginate (props) {
         prevPage.current = page;
     }, [page]);   
 
-    const arrowSize = 10;
+    const arrowSize = 15;
     const maxItems = length;
 
     let items; 
@@ -53,9 +53,12 @@ return (
 
             <div style ={{marginTop: 20, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-evenly'}}>
 
-            <Button disabled = {page == 0} variant='outline-dark-custom btn-sm' style={{borderRadius: '10', border: 0}} onClick ={() => setPage(page - 1)}>
-            <img src={'static/UI/back.png'} height={arrowSize} width = {arrowSize} />
+            <Button disabled = {page == 0} variant='outline-dark-custom btn-sm' style={{borderRadius: '3px', border: 0}} onClick ={() => setPage(page - 1)}>
+            {/* <img src={'static/UI/back.png'} height={arrowSize} width = {arrowSize} /> */}
             
+            <svg style={{height:arrowSize, width:arrowSize}}>
+              <use href={'static/UI/back.svg#back'}></use>
+            </svg>
 
             </Button>
 
@@ -65,9 +68,11 @@ return (
             
             </text>
 
-            <Button disabled = {items.length < maxItems} variant='outline-dark-custom btn-sm' style={{borderRadius: '10', border: 0}} onClick ={() => setPage(page + 1)}>
-            <img src={'static/UI/next.png'} height={arrowSize} width = {arrowSize} />
-            
+            <Button disabled = {items.length < maxItems} variant='outline-dark-custom btn-sm' style={{borderRadius: '3px', border: 0}} onClick ={() => setPage(page + 1)}>
+            {/* <img src={'static/UI/next.png'} height={arrowSize} width = {arrowSize} /> */}
+            <svg style={{height:arrowSize, width:arrowSize}}>
+              <use href={'static/UI/next.svg#next'}></use>
+            </svg>
 
             </Button>
             

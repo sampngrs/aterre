@@ -45,6 +45,8 @@ function ControlPanel (props) {
   const transport = props.transportCl.filter((place) => (!!place.tags.public_transport))
   const neighbourhood = props.transportCl.filter(data => (!!data.tags.amenity) || (!!data.tags.shop))
 
+
+  console.log(timingData)
   const times = timingData.length > 0 ? 
 
     timingData.map((item) => item.data.filter((nums) => nums.time < 15)).map((x) => countStops(x.length - 1, x, 0)) : 
@@ -64,7 +66,7 @@ function ControlPanel (props) {
 
   const keyText = [
     // {text: `From ${((props.transportCl.length > 0) ? stationName + ', ': ', ')}` + ((ACC < 30) ? "only ":"") + ACC  + '%' + ' of the city is accessible within 15 minutes', pass: ACC >= 30}, 
-    {text: timingData.length > 0 ? `From ${stationName} ` + ((ACC < 30) ? "only ":"") + ACC  + '%' + ' of the city is accessible within 15 minutes' : 'There is limited access to reliable pulic transport in the surrounding area', pass: ACC >= 30}, 
+    {text: (timingData.legend) ? `From ${stationName} ` + ((ACC < 30) ? "only ":"") + ACC  + '%' + ' of the city is accessible within 15 minutes' : 'There is limited access to reliable pulic transport in the surrounding area', pass: ACC >= 30}, 
     {text: neighbourhood.length > 20 ? 'There are a range of shops, supermarkets, and restaurants within the surrounding area' : 'There is limited access to shops, supermarkets, and restaurants within the surrounding area', pass: neighbourhood.length > 20}, 
     {text: (amenities.length > 0) && true ? `There is public green space in the surrounding area` : "Our data indicated that there are limited open, green spaces in the surrounding area" , pass: amenities.length > 0}];
 
@@ -138,7 +140,7 @@ function ControlPanel (props) {
 
 
               {/*{(!props.isLoading && !(props.transportCl.length == 0)) && <ControlAccordion timingData={props.timingData} stations = {props.transportCl} setMarkers = {props.setMarkers}/>}*/}
-
+                {console.log(timingData)}
               <ControlAccordion {...props} 
               transport = {transport} 
               amenities = {amenities} 
