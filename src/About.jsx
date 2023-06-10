@@ -8,8 +8,8 @@ function About (props) {
 
 return (
 
-            <Window {...props} > 
-            <div style={{width: '500px', height: '300px', backgroundColor:'white'}}> 
+            <Window {...props} height={300} width={500}> 
+            <div style={{backgroundColor:'white', borderRadius:'10px'}}> 
 			<b> <br /> About </b> 
             <br /><br />
 

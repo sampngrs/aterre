@@ -1,9 +1,32 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CSSTransition, SwitchTransition } from 'react-transition-group';
-import {VictoryChart, VictoryTooltip, VictoryVoronoiContainer, VictoryTheme, VictoryArea, VictoryAxis, VictoryStack} from 'victory';
+import {
+  VictoryChart, 
+  VictoryTooltip, 
+  VictoryVoronoiContainer, 
+  VictoryTheme, 
+  VictoryArea, 
+  VictoryAxis, 
+  VictoryStack, 
 
+} from 'victory';
 
-import { ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Area, AreaChart } from 'recharts';
+import { getContinuousColour } from './Colours';
+
+import chroma from 'chroma-js';
+
+import { ResponsiveContainer, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Area, 
+  AreaChart, 
+  Legend, 
+  Line, 
+  LineChart, 
+  Chart
+} from 'recharts';
 
 
 import Button from 'react-bootstrap/Button';
@@ -15,80 +38,62 @@ import DataSelector from './DataSelector.jsx'
 
 
 function Portrait (props) {
-
+  
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
-    const { crimeData } = props;
+    const { crimeData = [{'data': 0}] } = props;
     const [fullscreen, setFullscreen] = useState(false)
     
     const { color = 'red' } = props;
     const [activeKey, setActiveKey] = useState(0)
 
-    // useEffect(() => {
-    //    if (crimeData.length > 0){
-    //     setActiveKey(crimeData[0].id)
-    //   }
+    let activeData = (crimeData[0].data) ? crimeData[0].data.sub_data : null
+    let areaColors = activeData ? chroma.scale('OrRd').padding([0.4, 0]).colors(Object.values(crimeData[activeKey].data.MajorText).length ) : null;
 
-    // }, [crimeData]);
-   
-    // const graph = crimeData.length > 0 && activeKey != 0 ? <VictoryChart 
-    //      theme={VictoryTheme.greyscale}  height={400} padding={50} 
-    //               // maxDomain={{ x: 65 }}
-    //      containerComponent={
-    //       <VictoryVoronoiContainer
+    const graph = 
 
+    (activeData) ? 
+    <div style = {{width: '100%', height: '200px', paddingTop:10, margin: 0}}>
 
-    //       />}
-          
-    //      >
-    //      {/*<VictoryAxis dependentAxis tickFormat={ (t, i) => console.log(t,i)} scale={'linear'} range={[0, 20000]}/>
-    //      <VictoryAxis domain={[1900,2000]} scale={'linear'}/>*/}
-    //      {/*<VictoryAxis scale={{ x: "data" }} animate ={true} tickFormat={(t) => new Date(t).getMonth() > 4 ? monthNames[new Date(t).getMonth()] : null} />*/}
-    //      {/*<VictoryAxis scale={{ x: "data" }} animate ={true} tickFormat={(t) => new Date(t).getMonth() <= 4 ? new Date(t).getFullYear() : null} />*/}
-    //      <VictoryStack colorScale={color}>
-
-    //      {
-          
-    //       crimeData.filter((item) => item.id == activeKey)[0].data.map((node, index) => 
-    //         <VictoryArea data={node.data} x="date" y="occurence" 
-    //         // labels={node.MajorText} labelComponent={ <VictoryTooltip /> }
-    //         /> 
-
-    //         )
-    //     }
-
-    //      {/*<VictoryArea data={timingData[Object.keys(timingData)[1]].data} x="time" y="stops" style={{ data: { fill: "#000000" } }}/>
-    //      <VictoryArea data={timingData[Object.keys(timingData)[0]].data} x="time" y="stops" style={{ data: { fill: "#c43a31" } }}/>*/}
-
-    //     </VictoryStack>
-    //     </VictoryChart> : null;
-
-    console.log(crimeData[0].data[0].data)
-    const graph = crimeData.length > 0 && activeKey != 0 ? 
-    <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          width={500}
-          height={400}
-          data={crimeData[0].data[0].data}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 0,
-          }}
+          data={crimeData[activeKey].data.sub_data}
+          margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
+          width = {260} height = {200}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis dataKey="occurence"/>
-          <Tooltip />
-          <Area type="monotone" dataKey="occurence" stroke="#8884d8" fill="#8884d8" />
+          {/*<CartesianGrid strokeDasharray="3 3" />*/}
+
+          <XAxis 
+          dataKey="year" 
+          allowDuplicatedCategory={false} 
+          height={20} 
+          tickFormatter={(t) => "'" + (t.getFullYear() % 100 >= 10 ? t.getFullYear() % 100 : "0" + t.getFullYear() % 100) } 
+          tick={{fill: 'black', fontSize: 9}} />
+
+          <YAxis 
+          tickSize={3} 
+          tick={{fill: 'black', fontSize: 9}} 
+          tickFormatter={(t) => t > 1000 ? t/1000 + 'k' : t} 
+          width={30}/>
+
+          {/*{(crimeData) ? crimeData[0].data.sub_data.map((num, index) => console.log(index)) : null}*/}
+          {Object.values(crimeData[activeKey].data.MajorText).map((num, index) => <Area type="linear" name={num} dataKey={`data[${index}]`} stackId='1' fillOpacity={1} stroke = {chroma(areaColors[index]).darken()} fill={areaColors[index]} 
+            // fill={`RGB(${ index * 15}, 0, 0)`}
+            />)}
+
+        {/* <Tooltip />  */}
+          
         </AreaChart>
-      </ResponsiveContainer> : null;
+      
+
+
+      
+      
+      </div> : null;
 
 return (
 
-			<div>
+			<div style ={{position: 'relative', width:'100%', height:'90%'}}> 
 
       <DataSelector 
       
@@ -98,7 +103,9 @@ return (
       fullscreen = {fullscreen} 
       setFullscreen={setFullscreen}
       children={graph}
-      
+      items={(activeData) ? Object.values(crimeData[activeKey].data.MajorText) : []}
+      items_obj = {(activeData) ? Object.values(crimeData[activeKey].data.MajorText).map((x, index) => ({'value': x, active: true, 'color': areaColors[index]})) : []}
+
       />
 
       {graph}
@@ -136,46 +143,6 @@ function flatten(data) {
       
     })
     return result
-  //   console.log(result)
-  //     data.forEach((obj) => {
-  //     if (result.length > 0 && obj.MajorText == result.pop().MajorText) {
-  //       console.log('yes')
-  //     } else {
-  //       console.log('no')
-  //       const x = new Object()
-  //       x.MajorText = obj.MajorText
-  //       result.push(x)
-  //       console.log('F')
-  //     }
-
-  //   })
-  // console.log(result)
 }
-
-
-// function sumOccurrencesByDate(data) {
-  // const result = {};
-
-  // data.forEach((obj) => {
-  //   const majorText = obj['MajorText'];
-  //   const occurrences = obj['data'];
-
-  //   occurrences.forEach((occurrence) => {
-  //     const date = occurrence['date'];
-  //     const occurrenceValue = occurrence['occurrence'];
-
-  //     if (!result[date]) {
-  //       result[date] = {};
-  //     }
-
-  //     if (!result[date][majorText]) {
-  //       result[date][majorText] = occurrenceValue;
-  //     } else {
-  //       result[date][majorText] += occurrenceValue;
-  //     }
-  //   });
-  // });
-
-  // return result;}
 
 export default Portrait;

@@ -19,6 +19,23 @@ import DataSelector from './DataSelector.jsx'
 import  Paginate from './Paginate.jsx';
 import Portrait from './Portrait.jsx';
 
+import chroma from 'chroma-js';
+
+import { ResponsiveContainer, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Area, 
+  AreaChart, 
+  Legend, 
+  Line, 
+  LineChart, 
+  Chart, 
+  PieChart, 
+  Pie, 
+  Cell
+} from 'recharts';
 
 import {VictoryChart, VictoryBar, VictoryTooltip, VictoryPie, VictoryVoronoiContainer, VictoryLabel, VictoryTheme, VictoryArea, VictoryAxis, VictoryStack} from 'victory';
 // import Accordian from './accordian.jsx'
@@ -31,23 +48,15 @@ function ControlAccordion(props){
   const { stations } = props;
   const { crimeData } = props
   
-  console.log(crimeData)
 
   const [filteredFood, setFilteredFood] = useState('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';'))
-
+  
   const tab_names = 
   [{name: 'Food', data: props.stations.filter(data => (!!data.tags.amenity) && (filteredFood.includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'amenity'}, 
     {name: 'Schools', data: props.stations.filter(data => (!!data.tags.amenity) && (['university', 'school'].includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'school' }, 
     {name: 'Supermarkets', data: props.stations.filter(data => (['convenience', 'supermarket'].includes(data.tags.shop))).sort((a,b) => a.distance - b.distance ), image: 'shop' }];
 
-// const tab_names = 
-//       [{name: 'Food', data: props.stations.filter(data => (!!data.tags.amenity) && (!!data.tags.amenity) && (filteredFood.length == 0 ? 'bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';') : filteredFood).includes(data.tags.amenity)).sort((a,b) => a.distance - b.distance ), image: 'amenity'}, 
-//         {name: 'Schools', data: props.stations.filter(data => (!!data.tags.amenity) && (['university', 'school'].includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'school' }, 
-//       {name: 'Supermarkets', data: props.stations.filter(data => (['convenience', 'supermarket'].includes(data.tags.shop))).sort((a,b) => a.distance - b.distance ), image: 'shop' }];
-
-
   const [activeTab, setActiveTab] = useState('Food')
-
 
   useEffect(() => {
     // console.log(activeTab)
@@ -68,8 +77,10 @@ function ControlAccordion(props){
     <TransportItem data = {item} map = {props.map}/>
       // console.log(item.tags)
     );
+  let categoryPosts;
+  let data;
 
-  let categoryPosts = props.stations.filter(data => (!!data.tags.amenity) && ('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';').includes(data.tags.amenity))).reduce((acc, post) => {
+   categoryPosts = props.stations.filter(data => (!!data.tags.amenity) && ('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';').includes(data.tags.amenity))).reduce((acc, post) => {
     let {tags: {name}} = post;
     let {tags: {amenity}} = post;
     return {...acc, [amenity]: [...(acc[amenity] || []), name]};
@@ -81,10 +92,12 @@ function ControlAccordion(props){
 
   }
 
-  let data = [];
+   data = [];
   for (const object in categoryPosts) {
     data.push({'x': object, 'y': categoryPosts[object]})
   }
+  
+  
 
   let active = 2;
   let items = [];
@@ -97,7 +110,7 @@ function ControlAccordion(props){
   }
 
   let colors = ['black', 'red', 'navy', 'green', "orange", "yellow"];
-  
+
   colors = [
 // "#ffffff", 
 "#dfdfdf",
@@ -111,72 +124,61 @@ function ControlAccordion(props){
 "#000000"
     ]
 
+    let colourScale = chroma.scale(['darkblue','lightblue']).mode('lch').colors(6)
+
   const neighbourhoodTabs = tab_names.map((item) =>
 
-    <Tab eventKey={item.name} title={item.name} fill onEnter={() => (setActiveTab(item.name), props.setMarkers(item.data), setFilteredFood('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';')))}>
+    <Tab eventKey={item.name} title={item.name} fill onEnter={() => (setActiveTab(item.name), props.setMarkers(item.data), setFilteredFood(data.map((item) => item.x)))}>
 
-    
 
-    {item.data.length == 0 ? 
-
-    <span style = {{fontSize: 12, color:'grey'}} className ='centered'> Sorry, our data indicates that there are no <br /> {item.name == "Food" ? item.name.toLowerCase() + ' options' : item.name.toLowerCase()} in the surrounding area. </span> :
-    
-    item.name == 'Food' ? 
-
+{item.name == 'Food' ? 
     <div style = {{ width: '100%'}}>
 
     <br/>
+    
+    <PieChart width={280} height={200}>
+          <Pie
+            dataKey="y"
+            isAnimationActive={false}
+            data={data.sort((b,a) => a.y - b.y )}
+            cx="50%"
+            cy="50%"
+            innerRadius={50}
+            labelLine={false}
+            label = {<CustomLabel active={true} />}
+            >
 
-    <VictoryPie
-    data={data.sort((b,a) => a.y - b.y )}
-    colorScale= "blue"
-    innerRadius={100}
-    labelRadius={180}
-
-    labels={({ datum }) => datum.x}
-        //   style={{
-        //   data: { fill: ({ datum }) => filteredFood.includes(datum.x) ? "blue" :  "rgb(155, 102," + datum.y * 5 + ')'  }
-        // }}
-    labelComponent={<CustomLabelComponent active={true} />} padAngle={({ datum }) => 1}
-    events={[{
-      target: "data",
-      eventHandlers: {
-        onClick: (e) => {
-          return true ? [
-          {
-            target: "labels",
-            mutation: ({ text }) => {
-
-              filteredFood.includes(text) ? setFilteredFood(filteredFood.filter(item => item !== text)) : setFilteredFood(filteredFood.concat([text]))
-
-            }
-          }, {
-            target: "data",
-            mutation: ({ style }) => {
-              return style.fill === "#C4c5c6" ? null : { style: { fill: "#C4c5c6" } };
-            }
+              {
+            data.sort((b,a) => a.y - b.y ).map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={filteredFood.includes(entry.x) ? colourScale[index] : 'grey'} style={{outline: 'none'}} onClick={(e) => (setFilteredFood(arrayTest(filteredFood, entry.x)), console.log(filteredFood))}
+              />
+            ))
           }
-          ] : null;
-        }
-      }
-    }]}
-              //  "grayscale", "qualitative", "heatmap", "warm", "cool", "red", "green", "blue
 
+            </Pie> 
+          {/* <Tooltip /> */}
+        </PieChart>
 
-    /> </div> : null}
-
-    <br />
-    <Paginate items=
+   
+     </div> : null} 
     {item.data.length > 0 ? 
-    item.data.map((school) => 
-     <Container fluid style={{marginBottom:'4px'}}>
-     <Row>
-     <Col md ='auto' > {item.image ? <img src={'static/' + item.image + '/' + (school.tags.amenity ? school.tags.amenity : school.tags.shop) +'.png' } height='15px' width = '15px' /> : null} </Col>
-     <Col > <span style={{fontSize: 11}}> {school.tags.name} </span> </Col>
-     <Col md ='auto'> <span style={{fontSize: 9}}> {(Math.round(school.distance * 100) / 100).toFixed(2) + ' km'} </span> </Col>
-     </Row> 
-     </Container>
-     ) : null} />
+      <div> 
+      <br />
+      <Paginate items=
+      {item.data.length > 0 ? 
+      item.data.map((school) => 
+      <Container fluid style={{marginBottom:'4px'}}>
+      <Row>
+      <Col md ='auto' > {item.image ? <img src={'static/' + item.image + '/' + (school.tags.amenity ? school.tags.amenity : school.tags.shop) +'.png' } height='15px' width = '15px' /> : null} </Col>
+      <Col > <span style={{fontSize: 11}}> {school.tags.name} </span> </Col>
+      <Col md ='auto'> <span style={{fontSize: 9}}> {(Math.round(school.distance * 100) / 100).toFixed(2) + ' km'} </span> </Col>
+      </Row> 
+      </Container>
+      ) : null} /> </div> : 
+
+      <span style = {{fontSize: 12, color:'grey'}} className ='centered'> Sorry, our data indicates that there are no {item.name == "Food" ? item.name.toLowerCase() + ' options' : item.name.toLowerCase()} in the surrounding area. </span>
+      
+    }
 
     </Tab>
     );
@@ -312,7 +314,29 @@ function titleCase(str) {
   }).join(' ');
 }
 
+
+function CustomLabel (props) {
+  const { payload: {payload} } = props 
+  const name = payload.x
+  const { x, y } = props;
+  const imgHeight = 15;
+  const imgWidth = 15;
+  const padding = (-10);
+  return (
+
+    <image
+      href = {('static/' + 'amenity' + '/' + name + '.png')}
+      height={imgHeight}
+      width={imgWidth}
+      x={x - imgWidth / 2}
+      y={y - imgHeight - padding}
+     />
+     
+    );
+}
+
 function CustomLabelComponent (props) {
+  console.log(props)
   const { x, y } = props;
   const imgHeight = 20;
   const imgWidth = 20;
@@ -328,6 +352,10 @@ function CustomLabelComponent (props) {
     ></image> 
 
     );
+}
+
+function arrayTest(array, item) {
+  return (array.includes(item) ? array.filter(x => x !== item) : array.concat(item))
 }
 
 function TransportItem(props) {

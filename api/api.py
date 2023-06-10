@@ -61,7 +61,7 @@ def get_transport(lat, lon):
 	[out:json][timeout:100];
 	(
 	  nw["amenity"~"bar|biergarten|cafe|fast_food|food_court|ice_cream|pub|restaurant"]["name"]{0};
-	  nwr["leisure"]['name']{0};
+	  nwr["leisure"]['name']{0};				
 	  nw["shop"~"convenience|supermarket"]["name"]{0};
 	  node["public_transport"="station"]{1};
 	  relation["public_transport"="station"]{1};
@@ -132,23 +132,23 @@ def get_proximity(code):
 def get_crime(lat,lon):
 
 
-	# shapes = gpd.read_file('static/data/London-wards-2018_ESRI/London_Ward.shp')
+	# shapes = gpd.read_file('static/data/London-wards-2018_ESRI/London_Ward.shp'
 	shapes = gpd.read_file('static/Voting Wards/london_voting_wards.shp')
 	point = gpd.GeoSeries.from_xy([lon], [lat], crs="EPSG:4326")
 	area = shapes[shapes.geometry.contains(point.iloc[0])].iloc[0].replace('.', '')
-	print(area)
-	filename = '{}.csv'.format(area['Ward'])
+	filename = '{}.csv'.format(area['Ward'].replace('.', ''))
+	print(filename)
 	# return pd.read_csv('static/crime/{}'.format(filename)).to_json(orient='records')
 	return [
 	{
 	'id': 'crime', 
 	'title': 'Recorded Crime', 
-	'data': flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward']))).to_json(orient='records')}
+	'data': parse_data(sort_data(flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward'].replace('.', ''))))).to_json(orient='columns'))}
 	, 
 	{
 	'id': 'jobs', 
 	'title': 'Employment by Sector', 
-	'data': pd.read_csv("static/Data/Sets/Jobs/Borough/{}.csv".format(area['Borough'])).drop('Unnamed: 0', axis = 1).reset_index().to_json(orient='records')}
+	'data': parse_data(sort_data(pd.read_csv("static/Data/Sets/Jobs/Borough/{}.csv".format(area['Borough'])).drop('Unnamed: 0', axis = 1)).to_json(orient='columns'))}
 	]
 
 def flatten(data):
@@ -183,6 +183,28 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
+
+def parse_data(data):
+    n_c = []
+    n_json = {}
+    
+    for item, record in json.loads(data).items():
+    
+        if item.isnumeric():
+            n_c.append({'year': item, 'data': record})
+
+        else:
+            n_json[item] = record
+
+    n_json['sub_data'] = n_c
+    
+    return n_json
+
+def sort_data(data):
+    df = data
+    df['sum'] = df.sum(axis = 1)
+    df = df.sort_values('sum', ascending = True).reset_index(drop = True).drop('sum', axis = 1)
+    return df
     
 @app.get('/shutdown')
 def shutdown():

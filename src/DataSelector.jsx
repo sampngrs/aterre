@@ -6,30 +6,43 @@ import Button from 'react-bootstrap/Button';
 import './App.scss';
 import './Animations.scss';
 import Window from './Window.jsx'
+import MultiSelector from './MultiSelector';
+import LegendSelector from './Components/LegendSelector';
 
 
 function DataSelector (props) {
     let {dropdown = true} = props
+    const {items_obj} = props;
+    const {activeKey = 0 }  = props
     const [expanded, setExpanded] = useState(false)
     const {fullscreen} = props;
     const {setFullscreen} = props
     const { titles } = props
     dropdown = props.titles.length > 1
-    const activeTitle = titles.length > 0 && props.activeKey ? props.titles.filter((item) => item.id == props.activeKey)[0].title : null
+    const activeTitle = props.titles[activeKey].title
+    const [activeItems, setActiveItems] = useState([])
+    useEffect(() => {
+    
+    }, [])
 
-    const datasets = titles.filter((obs) => obs.id != props.activeKey).map((item, index) => 
+    const datasets = titles.map((item, index) => 
                                                     <div style={{width:'100%', 
                                                     borderBottom: index != titles.length - 2 ? ".02rem solid rgba(120,120,120, 0.60)" : "", 
-                                                    padding: '5px 0px 5px 0px'}}> <h7 style={{paddingLeft:10, fontSize:13, cursor:'pointer', marginTop:'10px'}} onClick={() => (props.setActiveKey(item.id), setExpanded(false))}> {item.title} </h7> <br /> </div>
+                                                    padding: '5px 0px 5px 0px'}}> <h7 style={{paddingLeft:10, fontSize:13, cursor:'pointer', marginTop:'10px'}} onClick={() => (props.setActiveKey(index), setExpanded(false))}> {item.title} </h7> <br /> </div>
                                                 )
 
 return (    
 
             <div> 
 
-                <Window animClass='left-expand' setActive={setFullscreen} active = {fullscreen}> 
-                
-                    <div style={{}}> {props.children} </div> 
+                <Window animClass='left-expand' setActive={setFullscreen} active = {fullscreen} width={800} height={500}> 
+                   
+                    <div style={{margin:'20px'}}> {props.children} </div> 
+                    <br /> 
+                    <LegendSelector items={items_obj} />
+                    <MultiSelector items={props.items}/> 
+                    
+                    
 
                 </Window>
 

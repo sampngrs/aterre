@@ -14,7 +14,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import Stack from 'react-bootstrap/Stack';
 import { CSSTransition } from 'react-transition-group';
 
-
+import Search from './Search';
 
 import {VictoryChart, VictoryBar, VictoryTooltip, VictoryPie, VictoryVoronoiContainer, VictoryLabel, VictoryTheme, VictoryArea, VictoryAxis} from 'victory';
 // import Accordian from './accordian.jsx'
@@ -74,7 +74,9 @@ function ControlPanel (props) {
       <Container className= {props.transportCl.length > 0 ? 'control shadow' : 'control'} style={{padding: 0, backgroundColor: props.transportCl.length > 0 ? "white" : ""}}> 
      {/*<Container className= {props.transportCl.length > 0 ? 'control shadow' : 'control'} style={{padding: 0, backgroundColor: "white"}}> */}
           <div className = ''>
-          <form onSubmit = {(event) => {event.preventDefault(); props.updateMap(event); setAccordionActive(false)}} className='searchBar shadow' > 
+          
+          <Search updateMap={props.updateMap} setAccordionActive={setAccordionActive} isLoading = {props.isLoading} input={props.input} handleChange={props.handleChange} /> 
+          {/* <form onSubmit = {(event) => {event.preventDefault(); props.updateMap(event); setAccordionActive(false)}} className='searchBar shadow' > 
             <Stack direction='horizontal' gap={3}>
             <GetInput input = {props.input} handleChange = {props.handleChange}/>
             <Button variant='outline-dark-custom btn-sm' type="submit" style={{borderRadius: '10', width: '77px'}}>
@@ -84,7 +86,7 @@ function ControlPanel (props) {
 
             </Button>
             </Stack>
-           </form> 
+           </form>  */}
            <CSSTransition
            in={searchErrorAlert}
            timeout={500}

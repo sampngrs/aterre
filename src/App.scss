@@ -14,14 +14,16 @@ $nav-link-font-size:  5;
 
 .btn-outline-dark-custom { 
  color: #000000; 
- background-color: #FFFFFF; 
- border-color: #000000; 
- border-width: 1px;
+ background-color: #FFFFFF00; 
+ border-radius: 100px;
+ 
 } 
 
 .btn-outline-dark-custom:hover {
-  color: #FFFFFF; 
-  background-color: black; 
+  color: white; 
+  background-color: #000000; 
+  border-width: 1px;
+  border-color: black; 
 }
 
 
@@ -66,23 +68,39 @@ $nav-link-font-size:  5;
   color: white;
 }
 
-.search {
+.searchBox {
+  flex-grow: 1;
+
+}
+
+.multiBox {
   background: rgba(51, 170, 51, 0);
-  color: black;
-  margin:auto;
   outline: 0;
-  border-width: 0 0 2px;
+  border-width: 2px;
+  border-radius: 4px;
   border-color: grey;
 }
 
-.search:focus {
+.typeBox, .searchField {
   color: black;
+  margin:auto;
   background: rgba(51, 170, 51, 0);
-  border-color: $accordion-button-active-color;
+  outline: 0;
+  border-width: 0;
+  border-color: grey;
+}
+
+.searchField {
   border-width: 0 0 2px;
 }
 
+.searchField:hover, .searchField:focus-within, .multiBox:hover, .multiBox:focus-within {
+  border-color: black;
+}
+
+
 .searchBar {
+  padding:10px;
   background: white;
   vertical-align: middle;
   width: 100%;
@@ -91,7 +109,7 @@ $nav-link-font-size:  5;
   position: relative;
   display: flex;   
   z-index: 4;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -115,7 +133,8 @@ $nav-link-font-size:  5;
   margin-left: auto;
   accordion-icon-transition:  none;
   margin-right: auto;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding-top: 10px;
   border-radius: 15px;
   flex: 1;
@@ -223,29 +242,15 @@ background-image: none !important;
   top:90px;
 }
 
-.about {
-
- position: fixed; 
-text-align:center;
- top: calc(50vh - 125px);
- left: calc(50vw - 250px);
- background-color: white;
- width: 500px;
- height: 300px;
- z-index: 11;
- border-radius: 10px;
-}
 
 .about {
 
  position: fixed; 
 text-align:center;
- top: calc(50vh - 125px);
- left: calc(50vw - 250px);
  background-color: white;
  height: fit-content;
  z-index: 11;
- border-radius: 10px;
+ border-radius: 5px;
  width: fit-content;
 }
 

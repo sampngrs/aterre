@@ -7,6 +7,7 @@ import './Animations.scss';
 
 
 function Paginate (props) {
+    const fullSet = props.items ? props.items : []
     const [page, setPage] = useState(0);
     const { length = 5 } = props;
     const prevPage = useRef();
@@ -17,9 +18,14 @@ function Paginate (props) {
 
     const arrowSize = 10;
     const maxItems = length;
-    const items = props.items.slice(page * maxItems,page * maxItems + maxItems);
 
-(props.items.length / maxItems < page) ? setPage(Math.round(props.items.length / maxItems) ) : console.log() ;
+    let items; 
+    if (fullSet) {
+      items = fullSet.slice(page * maxItems,page * maxItems + maxItems);
+      (fullSet.length / maxItems < page) ? setPage(Math.round(fullSet.length / maxItems) ) : console.log();
+    } else {items = []}
+
+
 
 
   
@@ -43,7 +49,7 @@ return (
         
            
 
-            {props.items.length > maxItems ? 
+            {fullSet.length > maxItems ? 
 
             <div style ={{marginTop: 20, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-evenly'}}>
 
@@ -52,6 +58,13 @@ return (
             
 
             </Button>
+
+            <text style={{fontSize:'12px'}}> 
+              
+            {`${page + 1} of ${Math.ceil(fullSet.length / maxItems)}`} 
+            
+            </text>
+
             <Button disabled = {items.length < maxItems} variant='outline-dark-custom btn-sm' style={{borderRadius: '10', border: 0}} onClick ={() => setPage(page + 1)}>
             <img src={'static/UI/next.png'} height={arrowSize} width = {arrowSize} />
             

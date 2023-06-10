@@ -9,6 +9,8 @@ function Window (props) {
     const {setActive} = props;
     const {active} = props;
     const {animClass = "about"} = props;
+    const {width = 500} = props;
+    const {height = 300} = props
 
 return (
 
@@ -30,7 +32,7 @@ return (
            unmountOnExit
            >
            
-			<div className = "about shadow"> 
+			<div className = "about shadow" style ={{height: height, width: width, left: `calc(50vw - ${width/2}px)`, top: `calc(50vh - ${height/2}px)`}}> 
 
             {props.children}
 
