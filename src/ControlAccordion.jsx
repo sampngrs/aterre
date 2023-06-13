@@ -17,7 +17,7 @@ import Pagination from 'react-bootstrap/Pagination'
 import { CSSTransition } from 'react-transition-group';
 import DataSelector from './DataSelector.jsx'
 import  Paginate from './Paginate.jsx';
-import Portrait from './Portrait copy';
+import Portrait from './Portrait';
 
 import Grid from './Grid';
 import GridItem from './GridItem';
@@ -60,7 +60,8 @@ function ControlAccordion(props){
   
 
   const [filteredFood, setFilteredFood] = useState('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';'))
-  const categories = [... new Set(props.stations.filter((cat) => (!!cat.tags.amenity)).map((cat) => cat.tags.amenity))]
+  const categories = [... new Set(props.stations.filter((cat) => (!!cat.tags.amenity) || (!!cat.tags.shop)).map((cat) => (cat.tags.amenity) ? cat.tags.amenity : cat.tags.shop))]
+  console.log(categories)
   const tab_names = 
   [{name: 'Food', data: props.stations.filter(data => (!!data.tags.amenity) && (filteredFood.includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'amenity'}, 
     {name: 'Schools', data: props.stations.filter(data => (!!data.tags.amenity) && (['university', 'school'].includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'school' }, 
@@ -195,9 +196,9 @@ function ControlAccordion(props){
 
   let timer;
 
-  const [selCat, setSelCat] = useState(null)
+  const [selCat, setSelCat] = useState(categories[0])
 
-  let scale = chroma.scale(['#373B44', '#4286f4']).mode('lch').colors(Object.values(timingData).length > 0 ? Object.values(timingData.legend).length : 2)
+  let scale = chroma.scale(['#373B44', '#4286f4']).mode('lch').colors(Object.values(timingData[0].data.legend).length > 0 ? Object.values(timingData[0].data.legend).length : 2)
 
   return (
    <Accordion className="controlAccordion" flush>
@@ -214,30 +215,18 @@ function ControlAccordion(props){
    <Accordion.Body onExit = {() => (props.setMarkers([]), props.setAccordionActive(false))} onEntering = {() => (props.setMarkers(props.stations.filter(data => (!!data.tags.public_transport))),props.setAccordionActive(true))}>
         {/*{(this.props.stations.length > 0) && <p style = {{fontSize: 15}}> From this location, you could reach a total of {this.props.stations.length} different stations and {lines.length} different lines. </p> }*/}
 
-  <DataSelector titles ={[{'title' : 'Travel Time'}]} dropdown = {false}/>
-   <div className ='hoverPop' style={{position:'relative', width: '100%',  paddingBottom:5, paddingLeft: 0}}> 
+   <div style={{position:'relative', width: '100%',  paddingBottom:5, paddingLeft: 0}}> 
    <div className = 'centered' style ={{position: 'absolute', width:'100%', height:'90%'}}> 
    {timingData.length == 0 ?
     <span style = {{fontSize: 12, color:'black', zIndex:1, opacity:0.5}} className ='centered'> Sorry, our transport timing data <br /> currently only works with the <br /> Underground and DLR services. </span> : null }
 
     </div>  
-
-    <AreaChart
-     margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
-     width = {260} height = {200}
-      data={timingData.data}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-
- {Object.values(timingData).length > 0 ? 
-Object.values(timingData.legend).map((x, index) => 
-  
-
-  <Area type="linear" dataKey={`data[${index}]`} stackId={`${index}`} fillOpacity={1}  stroke='' fill={scale[index]}          // fill={`RGB(${ index * 15}, 0, 0)`}
-            />) : null}
-          
-      <XAxis 
-          dataKey="time" 
+    {console.log(timingData[0])}
+    <Portrait scale={['#373B44', '#4286f4']} crimeData = {[timingData[0]]} stroke = ' '>
+      
+          <XAxis 
+          dataKey="x" 
+          tickFormatter={(t) => t + "'" } 
           allowDuplicatedCategory={true} 
           height={20} 
           tick={{fill: 'black', fontSize: 9}} />
@@ -247,7 +236,11 @@ Object.values(timingData.legend).map((x, index) =>
           tick={{fill: 'black', fontSize: 9}} 
           tickFormatter={(t) => t} 
           width={30}/>
-    </AreaChart>
+
+      <CartesianGrid strokeDasharray="3 3" />
+
+      </Portrait> 
+
 
 
 
@@ -282,7 +275,7 @@ Object.values(timingData.legend).map((x, index) =>
   <Accordion.Item eventKey="1">
   <Accordion.Header>
   <img src='static/city.png' height='20px' width = '20px' />
-  <t style ={{paddingLeft:'20px'}}> Neighborhood </t>
+  <t style ={{paddingLeft:'20px'}}> Indicators and POIs </t>
   </Accordion.Header>
   <Accordion.Body onExit = {() => (props.setMarkers([]), props.setAccordionActive(false))} onEntering={() => (props.setMarkers(tab_names.filter((data) => data.name == activeTab).pop().data)
 
@@ -298,7 +291,22 @@ Object.values(timingData.legend).map((x, index) =>
 
   */}
 
-  <Portrait color='red' crimeData = {props.crimeData} /> 
+  <Portrait color='red' crimeData = {props.crimeData} stack={true}>
+
+          <XAxis 
+          dataKey="x" 
+          allowDuplicatedCategory={false} 
+          height={20} 
+          tickFormatter={(t) => "'" + (t.getFullYear() % 100 >= 10 ? t.getFullYear() % 100 : "0" + t.getFullYear() % 100) } 
+          tick={{fill: 'black', fontSize: 9}} />
+
+          <YAxis 
+          tickSize={3} 
+          tick={{fill: 'black', fontSize: 9}} 
+          tickFormatter={(t) => t > 1000 ? t/1000 + 'k' : t} 
+          width={30}/>
+    
+    </Portrait> 
 
   
 
@@ -309,10 +317,17 @@ Object.values(timingData.legend).map((x, index) =>
 
   </Tabs> */}
 
-
+  <div
+  style={{
+      backgroundColor: 'lightgrey',
+      width:'80%',
+      height: 1
+  }}
+  />
   {
 
-  
+
+
   (selCat) 
   
   ? 
@@ -330,7 +345,7 @@ Object.values(timingData.legend).map((x, index) =>
 
 <Paginate items=
     {
-    stations.filter(data => data.tags.amenity == selCat).map((school) => 
+    stations.filter(data => data.tags.amenity == selCat || data.tags.shop == selCat).map((school) => 
 
     <div style={{
       display:'flex',
@@ -426,7 +441,7 @@ Object.values(timingData.legend).map((x, index) =>
   <Accordion.Item eventKey="2">
   <Accordion.Header>
   <img src='static/bench.png' height='20px' width = '20px' />
-  <t style ={{paddingLeft:'20px'}}> Amenities </t>
+  <t style ={{paddingLeft:'20px'}}> Parks and Green Space</t>
   </Accordion.Header>
 
   <Accordion.Body onExit = {() => (props.setMarkers([]), props.setAccordionActive(false))} onEntering={() => (props.setMarkers(props.stations.filter(data => (!!data.tags.leisure))), props.setAccordionActive(true))}>

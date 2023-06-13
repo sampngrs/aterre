@@ -108,38 +108,20 @@ function MainScreen () {
           else return response.json()
       })
       .then((result) => {
-
-
         result.map((dataPoint) => {
               const {data} = dataPoint
-              data.sub_data = data.sub_data.map((d) => ({
-                              'year': new Date(d.year.substring(0,4), d.year.substring(4,6)), 
+              console.log(data.axes.map((d) => "date" in Object.keys(d)))
+              data.axes = data.axes.map((d) => ({
+                              'x': new Date(d.date.substring(0,4), d.date.substring(4,6)), 
                               'data': d.data
-                            }))
-              
-                // 'index' : dataPoint.data,
-                // 'major_text': dataPoint.data.MajorText,
-                // 'data' : dataPoint.data.sub_data
-                // 'id': 1, 
-                // 'data': {'data': dataPoint.data}
-                //   console.log(dataPoint)
-                //   dataPoint['data'].map((key) => console.log(key))
-                //   dataPoint['data'] = dataPoint['data'].map((key) => ({
-                //     'index': key.index,
-                //     'major_text': key.MajorText, 
-                //     'data': key.sub_data
-                //   //   'WardName': key.WardName,
-                //   // 'WardCode': key.WardCode,
-                //   // 'MinorText': key.MinorText,
-                //   // 'BoroughName': key.LookUp_BoroughName,
-                //   // 'data': Object.keys(key).filter((obs) => !isNaN(obs)).map((point) => ({'date': new Date(point.substring(0,4), point.substring(4,6)), 'occurence': key[point]}))
-                //   }))
-                  
+                            })
+                            
+                            )
+
         
                 })
         
-        console.log(result)
-        setCrimeData(result)
+                setCrimeData(result)
 
         // var data = result.map((dataPoint) => {
         //   dataPoint['data'] = JSON.parse(dataPoint['data']).map((key) => ({
@@ -208,7 +190,7 @@ function MainScreen () {
       const obj = Object.keys(data).map((key) => ({
         'stop': key, 
         'name': data[key].name,
-        'data': Object.keys(JSON.parse(data[key].data)).map((time) => ({'time': Number(time), 'stops': JSON.parse(data[key].data)[time] }))
+        'data': Object.keys(JSON.parse(data[key].data)).map((time) => ({'x': Number(time), 'stops': JSON.parse(data[key].data)[time] }))
       }))
       // const arrData = Object.keys(obj).map((key) => [Number(key), obj[key]]);
       // const arrData = Object.keys(obj).map((key) => ({'time': Number(key), 'stops': obj[key]}))
@@ -251,8 +233,11 @@ function MainScreen () {
         
 
         );
+      
+      
       setTransportCL(data.elements)
-      setIsLoading(false)
+      const myTimeout = setTimeout(() => setIsLoading(false), 1000);
+      
     })
     .catch((error) => {
       
@@ -313,9 +298,9 @@ function MainScreen () {
         <img src="/static/logo.png" width='60' height ='60' />
         <div style={{display:'flex', alginItems:'center', gap:'15px'
            }}>
-            <span className='textButton' >Home</span>
-            <span className='textButton' >Insights</span>
-            <span className='textButton' onClick={() => setAboutActive(!aboutActive)}>About</span>
+            {/* <span className='textButton' >Home</span> */}
+            {/* <span className='textButton' >Insights</span> */}
+            <span className='textButton' onClick={() => setAboutActive(!aboutActive)}>About us.</span>
 
         </div>
       </div>

@@ -46,22 +46,37 @@ function ControlPanel (props) {
   const neighbourhood = props.transportCl.filter(data => (!!data.tags.amenity) || (!!data.tags.shop))
 
 
-  console.log(timingData)
-  const times = timingData.length > 0 ? 
+  console.log(timingData.data)
+  // const times = timingData.length > 0 ? 
 
-    timingData.map((item) => item.data.filter((nums) => nums.time < 15)).map((x) => countStops(x.length - 1, x, 0)) : 
+  //   timingData.data.axes.map((item) => item.data.filter((nums) => nums.time < 15)).map((x) => countStops(x.length - 1, x, 0)) : 
 
-    1
+  //   1
 
-  // console.log(timingData[times.indexOf(7)].stop)
+  // if (timingData.length > 0){
 
-  // Need to learn how to use reducer functions so I can easily create 'key indicators' from the transportCl data! 
+  //   timingData[0].data.axes.map()
 
-  // const ACC = Math.round(countStops(timingData.filter(item => item.time < 15).length - 1, timingData, 0) * 100 / 272)
-  const max = timingData.length > 0 ? Math.max(...times) : null
-  const stationName = timingData.length > 0 ? timingData[times.indexOf(Math.max(...times))].name : null
+  // }
 
-  const ACC = Math.round(max * 100 / 272)
+  // const count = timingData
+
+  // const times = timingData.length > 0 ?  
+
+  //   timingData[0].data.axes.map((item) => item) : 
+
+  //   1
+
+
+
+  // // Need to learn how to use reducer functions so I can easily create 'key indicators' from the transportCl data! 
+
+  // // const ACC = Math.round(countStops(timingData.filter(item => item.time < 15).length - 1, timingData, 0) * 100 / 272)
+  // const max = timingData.length > 0 ? Math.max(...times) : null
+  // const stationName = timingData.length > 0 ? timingData[times.indexOf(Math.max(...times))].name : null
+
+  const stationName = ''
+  const ACC = '' // Math.round(max * 100 / 272)
 
 
   const keyText = [
@@ -140,7 +155,7 @@ function ControlPanel (props) {
 
 
               {/*{(!props.isLoading && !(props.transportCl.length == 0)) && <ControlAccordion timingData={props.timingData} stations = {props.transportCl} setMarkers = {props.setMarkers}/>}*/}
-                {console.log(timingData)}
+              {(!props.isLoading) ? 
               <ControlAccordion {...props} 
               transport = {transport} 
               amenities = {amenities} 
@@ -148,6 +163,9 @@ function ControlPanel (props) {
               stations = {props.transportCl}  
               setAccordionActive={setAccordionActive}
               />
+              : null
+            }
+              
 
               </Col>
             </div>}

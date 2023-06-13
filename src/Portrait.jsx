@@ -38,24 +38,23 @@ import DataSelector from './DataSelector.jsx'
 
 
 function Portrait (props) {
-  
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
+  {console.log(props.stroke)}
+      
     const { crimeData = [] } = props;
     const [fullscreen, setFullscreen] = useState(false)
     
-    const { color = 'red' } = props;
+    const { scale = 'OrRd' } = props;
+    const { stack = false} = props;
     const [activeKey, setActiveKey] = useState(0)
 
     const [activeData, setActiveData] = useState(null) 
-    
 
 
-    let areaColors = crimeData[activeKey].data.MajorText ? chroma.scale('OrRd').padding([0.4, 0]).colors(Object.values(crimeData[activeKey].data.MajorText).length ) : null;
+
+    let areaColors = crimeData[activeKey].data.legend ? chroma.scale(scale).mode('lch').padding([0.2, 0]).colors(Object.values(crimeData[activeKey].data.legend).length ) : null;
 
     useEffect(() => {
-      setActiveData((crimeData[activeKey].data.sub_data) ? Object.values(crimeData[activeKey].data.MajorText).map((x, index) => ({'index': index, 'value': x, active: true, 'color': areaColors[index]})) : null)
+      setActiveData((crimeData[activeKey].data.axes) ? Object.values(crimeData[activeKey].data.legend).map((x, index) => ({'index': index, 'value': x, active: true, 'color': areaColors[index]})) : null)
       console.log('crimeData')
     }, [crimeData, activeKey])
 
@@ -66,38 +65,22 @@ function Portrait (props) {
     <div onClick={() => setFullscreen(!fullscreen)} className='hoverPop' style = {{width: '100%',  paddingBottom:5, paddingLeft: 5, marginTop: 5}}>
 
         <AreaChart
-          data={crimeData[activeKey].data.sub_data}
+          data={crimeData[activeKey].data.axes}
           margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
           width = {260} height = {200}
         >
-          {/*<CartesianGrid strokeDasharray="3 3" />*/}
+          {props.children}
 
-          <XAxis 
-          dataKey="year" 
-          allowDuplicatedCategory={false} 
-          height={20} 
-          tickFormatter={(t) => "'" + (t.getFullYear() % 100 >= 10 ? t.getFullYear() % 100 : "0" + t.getFullYear() % 100) } 
-          tick={{fill: 'black', fontSize: 9}} />
 
-          <YAxis 
-          tickSize={3} 
-          tick={{fill: 'black', fontSize: 9}} 
-          tickFormatter={(t) => t > 1000 ? t/1000 + 'k' : t} 
-          width={30}/>
+{Object.values(activeData).map((x, i) => 
 
-          {/*{(crimeData) ? crimeData[0].data.sub_data.map((num, index) => console.log(index)) : null}*/}
-          {/* {Object.values(crimeData[activeKey].data.MajorText).map((num, index) => <Area type="linear" name={num} dataKey={`data[${index}]`} stackId='1' fillOpacity={1} stroke = {chroma(areaColors[index]).darken()} fill={areaColors[index]} 
-            // fill={`RGB(${ index * 15}, 0, 0)`}
-            />)} */}
-          {/* {Object.values(activeData.filter((item) => item.active == true)).map((x) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId='1' fillOpacity={1} stroke = {chroma(x.color).darken()} fill={x.color} 
-            // fill={`RGB(${ index * 15}, 0, 0)`}
-            />)} */}
+      <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId= {stack ? '1' : i}
+      fillOpacity={1} fill={x.color} 
+      stroke = {props.stroke ? props.stroke : chroma(x.color).darken()} 
 
-{Object.values(activeData).map((x) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId='1' fillOpacity={1} stroke = {chroma(x.color).darken()} fill={x.color} 
-            // fill={`RGB(${ index * 15}, 0, 0)`}
-            />)}
+                  // fill={`RGB(${ index * 15}, 0, 0)`}
+                  />)}
 
-        {/* <Tooltip />  */}
           
         </AreaChart>
       
@@ -123,11 +106,15 @@ return (
       fullscreen = {fullscreen} 
       setFullscreen={setFullscreen}
       children={graph}
-      items={(activeData) ? Object.values(crimeData[activeKey].data.MajorText) : []}
-      items_obj = {(activeData) ? Object.values(crimeData[activeKey].data.MajorText).map((x, index) => ({'value': x, active: true, 'color': areaColors[index]})) : []}
+      items={(activeData) ? Object.values(crimeData[activeKey].data.legend) : []}
+      items_obj = {(activeData) ? Object.values(crimeData[activeKey].data.legend).map((x, index) => ({'value': x, active: true, 'color': areaColors[index]})) : []}
       setActiveData={setActiveData}
       activeData={activeData}
-      />
+      stack={stack}
+      >
+        {props.children}
+
+      </DataSelector>
 
       {graph}
 
@@ -148,7 +135,7 @@ function flatten(data) {
   
     const result = []
     data.map((obj) => {
-      if (result.length > 0 && obj.MajorText == result.slice(-1)[0].major) {
+      if (result.length > 0 && obj.legend == result.slice(-1)[0].major) {
         
         var item = result.splice(-1)[0]
         item.data.forEach((date, index) => {
@@ -158,7 +145,7 @@ function flatten(data) {
         
         result.push(item)
       } else {
-        result.push(Occ(obj.WardName, obj.WardCode, obj.MajorText, obj.BoroughName, obj.data))  
+        result.push(Occ(obj.WardName, obj.WardCode, obj.legend, obj.BoroughName, obj.data))  
       }
 
       

@@ -61,13 +61,13 @@ def get_transport(lat, lon):
 	overpass_query = """
 	[out:json][timeout:100];
 	(
-	  nw["amenity"~"bar|biergarten|cafe|fast_food|food_court|ice_cream|pub|restaurant"]["name"]{0};
+	  nwr["amenity"~"bar|biergarten|cafe|fast_food|food_court|ice_cream|pub|restaurant"]["name"]{0};
+	  nwr["amenity"~"school|university|library|bank|hospital"]["name"]{0};
+	  nwr["shop"~"bakery|department_store|general|kiosk|mall|supermarket|wholesale|chemist"]["name"]{0};
 	  nwr["leisure"]['name']{0};				
 	  nw["shop"~"convenience|supermarket"]["name"]{0};
 	  node["public_transport"="station"]{1};
 	  relation["public_transport"="station"]{1};
-	  relation["amenity"="university"]['name']{0};
-	  way["amenity"="school"]['name']{0};
 	);
 	out center;
 	>;
@@ -90,7 +90,6 @@ def get_transport(lat, lon):
 			if i['tags']['name'] in [os.path.splitext(x)[0] for x in os.listdir('static/Data/Sets/Transport')]: 
 				bbb = pd.read_excel(f"static/Data/Sets/Transport/{i['tags']['name']}.xlsx",index_col=0)
 				data['elements'][x]['crowding'] = [{'time': x[0:4], 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
-				print(data['elements'][x]['crowding'])
 		if(i['type'] == 'node'):
 			data['elements'][x]['bearing'] = calc_bearing(float(lat), float(lon), data['elements'][x]['lat'], data['elements'][x]['lon'] )            
 
@@ -130,12 +129,20 @@ def get_proximity(code):
 		timings.rename(columns={"time": x}, inplace=True)
 		timingList.append(timings)
 		
-	frame = pd.concat(timingList, axis=1).fillna(0)
+	frame = pd.concat(timingList, axis=1).fillna(0).sort_index()
+	print(frame)
 
 	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
 
-	result = {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
-	'data': [{'time': x, 'data': y} for x, y in form_dic.items()]}
+	result =  [
+	{
+	'id': 'transport', 
+	'type':'area',
+	'title': 'Travel Time', 
+	'data': {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
+	'axes': [{'x': x, 'data': y} for x, y in form_dic.items()]}
+	}
+	]
 
 	# return {'response': 'error'}, 504
 
@@ -151,23 +158,24 @@ def get_crime(lat,lon):
 	point = gpd.GeoSeries.from_xy([lon], [lat], crs="EPSG:4326")
 	area = shapes[shapes.geometry.contains(point.iloc[0])].iloc[0].replace('.', '')
 	filename = '{}.csv'.format(area['Ward'].replace('.', ''))
-	print(filename)
 	# return pd.read_csv('static/crime/{}'.format(filename)).to_json(orient='records')
 	
 	# Integrate looping through file system to find data rather than it being hardcoded. 
 	
 	return [
-	{
-	'id': 'crime', 
-	'title': 'Crime by Type', 
-    'area': area['Ward'].replace('.', ''),
-	'data': parse_data(sort_data(flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward'].replace('.', ''))))).to_json(orient='columns'))}
-	, 
-	{
+		{
 	'id': 'jobs', 
+	'type':'line',
 	'title': 'Employment by Sector', 
 	'area': area['Borough'].replace('.', ''),
 	'data': parse_data(sort_data(pd.read_csv("static/Data/Sets/Jobs/Borough/{}.csv".format(area['Borough'])).drop('Unnamed: 0', axis = 1)).to_json(orient='columns'))}
+	,
+	{
+	'id': 'crime', 
+	'type':'line',
+	'title': 'Crime by Type', 
+    'area': area['Ward'].replace('.', ''),
+	'data': parse_data(sort_data(flatten(pd.read_csv('static/Data/Sets/Crime/Ward/{}.csv'.format(area['Ward'].replace('.', ''))))).to_json(orient='columns'))}
 	]
 
 
@@ -212,13 +220,14 @@ def parse_data(data):
     for item, record in json.loads(data).items():
     
         if item.isnumeric():
-            n_c.append({'year': item, 'data': record})
+            n_c.append({'date': item, 'data': record})
 
         else:
             n_json[item] = record
 
-    n_json['sub_data'] = n_c
-    
+    n_json['axes'] = n_c
+    n_json['legend'] = n_json['MajorText']
+    print(n_json['legend'])
     return n_json
 
 def sort_data(data):

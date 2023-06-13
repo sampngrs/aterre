@@ -20,48 +20,40 @@ function Chart(props) {
     const inputRef = useRef()
     const {height = '300px', width = 'calc(100%)'} = props; 
     const {data} = props
+    const { stack = false} = props;
     const {tooltip = false} = props
 
     const {activeData, setActiveData} = props
-
-    // const [items, setItems] = useState([])
-    
-    // useEffect(() => {
-    //     setItems(props.items)
-    // }, [])
-    const months = [...new Set(data.data.sub_data.map((item) => item.year.getMonth()))].length > 1
+    const timeseries = data.data.axes.map((d) => d.x instanceof Date).some((x) => x == true)
+    const months = timeseries ? [...new Set(data.data.axes.map((item) => item.x.getMonth()))].length > 1 : null
     
     return (
         <div style = {{width: width, height: height, margin: 0}}>
         <ResponsiveContainer>
         <AreaChart
-          data={data.data.sub_data}
+          data={data.data.axes}
           margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
           width = {'100%'}
         >
           {/*<CartesianGrid strokeDasharray="3 3" />*/}
 
-          <XAxis 
-          dataKey="year" 
-          allowDuplicatedCategory={false} 
-          height={20} 
-          tickFormatter={(t) => "'" + (t.getFullYear() % 100 >= 10 ? t.getFullYear() % 100 : "0" + t.getFullYear() % 100) } 
-          tick={{fill: 'black', fontSize: 9}} />
-
-          <YAxis 
-          tickSize={3} 
-          tick={{fill: 'black', fontSize: 9}} 
-          tickFormatter={(t) => t > 1000 ? t/1000 + 'k' : t} 
-          width={30}/>
+          {props.children}
 
           <CartesianGrid strokeDasharray="6" />
 
-          {Object.values(activeData.filter((item) => item.active == true)).map((x) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId='1' fillOpacity={1} stroke = {chroma(x.color).darken()} fill={x.color} 
-            // fill={`RGB(${ index * 15}, 0, 0)`}
-            />)}
+          {Object.values(activeData.filter((item) => item.active == true)).map((x, i) => <Area type="linear" name={x.value} dataKey={`data[${x.index}]`} stackId= {stack ? '1' : i}
+      fillOpacity={1} fill={x.color} 
+      stroke = {props.stroke ? props.stroke : chroma(x.color).darken()} 
 
-        {tooltip && <Tooltip labelFormatter={(t) => (months && t.toLocaleString('default', { month: 'long' }) + ", " ) + t.getFullYear() } allowEscapeViewBox={{ x: true, y: true }} labelStyle={{fontSize:'13px'}} contentStyle={{fontSize:'13px', lineHeight:'13px'}}/>}
-          
+                  // fill={`RGB(${ index * 15}, 0, 0)`}
+                  />)}
+
+      {tooltip && <Tooltip labelFormatter= {timeseries ? (t) => (months && t.toLocaleString('default', { month: 'long' }) + ", " ) + t.getFullYear() : 
+        (t) => (t + ' minutes')} 
+        
+        
+        
+        allowEscapeViewBox={{ x: true, y: true }} labelStyle={{fontSize:'13px'}} contentStyle={{fontSize:'13px', lineHeight:'13px'}}/>}
         </AreaChart>
         </ResponsiveContainer>
         </div> 

@@ -41,7 +41,7 @@ return (
                 <Window  setActive={setFullscreen} active = {fullscreen} width={580} height={370}> 
 
                 <PopoutChart {...props}>
-
+                    {props.children}
                 </PopoutChart>
 
                 </Window>
@@ -201,7 +201,9 @@ function PopoutChart (props){
                         </div>
 
                         {/* <text style={{fontSize:'10px'}}>This is an example subtitle which eventually will be more profound</text> */}
-                        <Chart tooltip={true} data={props.data} activeData={activeData}></Chart>
+                        <Chart tooltip={true} data={props.data} activeData={activeData} stack={props.stack}>
+                            {props.children}
+                        </Chart>
                         {/* <LegendSelector activeData={activeData} setActiveData={setActiveData}/> */}
                         {/* <MultiSelector items={props.items} />  */}
 
