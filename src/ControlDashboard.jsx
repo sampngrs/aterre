@@ -24,8 +24,8 @@ import  ControlAccordion from './ControlAccordion.jsx';
 
 function countStops (index, arr, sum) {
 
-    sum += arr[index].stops
-
+    sum += arr[index].data[0]
+    console.log(sum, arr[index].x)
         if (index != 0 ){
         return countStops(index - 1, arr, sum )
         }
@@ -46,7 +46,6 @@ function ControlPanel (props) {
   const neighbourhood = props.transportCl.filter(data => (!!data.tags.amenity) || (!!data.tags.shop))
 
 
-  console.log(timingData.data)
   // const times = timingData.length > 0 ? 
 
   //   timingData.data.axes.map((item) => item.data.filter((nums) => nums.time < 15)).map((x) => countStops(x.length - 1, x, 0)) : 
@@ -75,16 +74,21 @@ function ControlPanel (props) {
   // const max = timingData.length > 0 ? Math.max(...times) : null
   // const stationName = timingData.length > 0 ? timingData[times.indexOf(Math.max(...times))].name : null
 
-  const stationName = ''
-  const ACC = '' // Math.round(max * 100 / 272)
+  
+  // const access = 
+  
+  const transportAccess = timingData[0] ? Math.round(countStops(timingData[0].data.axes.filter(item => item.x < 15).length - 1, timingData[0].data.axes, 0) * 100 / 272) : null
+  const stationName = timingData[0] ? timingData[0].data.legend[0] : "Something";
 
+  const amenityAccess = neighbourhood.length
+  console.log(neighbourhood)
 
   const keyText = [
     // {text: `From ${((props.transportCl.length > 0) ? stationName + ', ': ', ')}` + ((ACC < 30) ? "only ":"") + ACC  + '%' + ' of the city is accessible within 15 minutes', pass: ACC >= 30}, 
-    {text: (timingData.legend) ? `From ${stationName} ` + ((ACC < 30) ? "only ":"") + ACC  + '%' + ' of the city is accessible within 15 minutes' : 'There is limited access to reliable pulic transport in the surrounding area', pass: ACC >= 30}, 
-    {text: neighbourhood.length > 20 ? 'There are a range of shops, supermarkets, and restaurants within the surrounding area' : 'There is limited access to shops, supermarkets, and restaurants within the surrounding area', pass: neighbourhood.length > 20}, 
+    {text: (timingData[0]) ? `From ${stationName}, ` + ((transportAccess < 30) ? "only ":"") + transportAccess  + '%' + ' of the city is accessible within 15 minutes' : 'There is limited access to reliable pulic transport in the surrounding area', pass: transportAccess >= 30}, 
+    {text: neighbourhood.length > 10000 ? 'There are a range of shops, supermarkets, and restaurants within the surrounding area' : 'There is limited access to shops, supermarkets, and restaurants within the surrounding area', pass: neighbourhood.length > 20}, 
     {text: (amenities.length > 0) && true ? `There is public green space in the surrounding area` : "Our data indicated that there are limited open, green spaces in the surrounding area" , pass: amenities.length > 0}];
-
+    
   return (
 
 

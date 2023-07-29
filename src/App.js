@@ -86,14 +86,23 @@ function MainScreen () {
 
     });
 
-  const resultLocation =  new L.Icon({
-      iconUrl:
-        'static/pins/default.png', 
-      iconSize: [30, 48],
-      popupAnchor: [2, -40],
-      shadowUrl: markerShadow, 
-      shadowAnchor: [13,38],
-      iconAnchor:   [15, 48]});
+  // const resultLocation =  new L.Icon({
+  //     iconUrl:
+  //       'static/pins/default.png', 
+  //     iconSize: [30, 48],
+  //     popupAnchor: [2, -40],
+  //     shadowUrl: markerShadow, 
+  //     shadowAnchor: [13,38],
+  //     iconAnchor:   [15, 48]});
+
+      const resultLocation =  new L.Icon({
+        iconUrl:
+          'static/pins/default.png', 
+        iconSize: [30, 48],
+        popupAnchor: [2, -40],
+        shadowUrl: markerShadow, 
+        shadowAnchor: [13,38],
+        iconAnchor:   [15, 48]});
 
   useEffect(() => {
 

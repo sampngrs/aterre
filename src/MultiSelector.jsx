@@ -3,18 +3,18 @@ import { useState, useRef, useEffect } from "react";
 
 function MultiSelector(props) {
     const inputRef = useRef()
-    const [items, setItems] = useState(["Bank Underground Station"])
+    const [items, setItems] = useState(["King's Cross St Pancras"])
     
 
-    useEffect(() => {
-        setItems(props.items)
-    }, [])
+    // useEffect(() => {
+    //     setItems(props.items)
+    // }, [])
 
 
 
 
     return (
-        <div className = 'multiBox' style={{padding: '5px', margin: '2px', borderStyle: 'solid', display:"flex", flexWrap:"wrap", alignContent:"flex-start", alignItems:'center', gap:'5px'}}> 
+        <div className = 'multiBox' style={{width:'95%', padding: '5px', margin: '2px', borderStyle: 'solid', display:"flex", flexWrap:"wrap", alignContent:"flex-start", alignItems:'center', gap:'5px'}}> 
              {items.map((x, index) => <ItemBox input={inputRef} setItems={setItems} value={x}> {x} </ItemBox>)}
             <TypeBox input={inputRef} setItems={setItems}/> 
         </div>

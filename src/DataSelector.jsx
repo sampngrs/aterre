@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ReferenceLine } from 'recharts';
 import { CSSTransition, SwitchTransition } from 'react-transition-group';
 import _ from 'lodash';
 
@@ -38,7 +39,7 @@ return (
 
             <div style={{width:'100%'}}> 
 
-                <Window  setActive={setFullscreen} active = {fullscreen} width={580} height={370}> 
+                <Window  setActive={setFullscreen} active = {fullscreen} width={580}> 
 
                 <PopoutChart {...props}>
                     {props.children}
@@ -203,7 +204,10 @@ function PopoutChart (props){
                         {/* <text style={{fontSize:'10px'}}>This is an example subtitle which eventually will be more profound</text> */}
                         <Chart tooltip={true} data={props.data} activeData={activeData} stack={props.stack}>
                             {props.children}
+                            
                         </Chart>
+
+                        <MultiSelector />
                         {/* <LegendSelector activeData={activeData} setActiveData={setActiveData}/> */}
                         {/* <MultiSelector items={props.items} />  */}
 

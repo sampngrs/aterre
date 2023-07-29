@@ -63,7 +63,7 @@ def get_transport(lat, lon):
 	(
 	  nwr["amenity"~"bar|biergarten|cafe|fast_food|food_court|ice_cream|pub|restaurant"]["name"]{0};
 	  nwr["amenity"~"school|university|library|bank|hospital"]["name"]{0};
-	  nwr["shop"~"bakery|department_store|general|kiosk|mall|supermarket|wholesale|chemist"]["name"]{0};
+	  nwr["shop"~"bakery|department_store|general|kiosk|mall|supermarket|chemist"]["name"]{0};
 	  nwr["leisure"]['name']{0};				
 	  nw["shop"~"convenience|supermarket"]["name"]{0};
 	  node["public_transport"="station"]{1};
@@ -126,11 +126,11 @@ def get_proximity(code):
 
 		df = pd.concat([ass, df], axis = 1, join = "inner")
 		timings = pd.DataFrame(df.groupby(['time'])['time'].count())
-		timings.rename(columns={"time": x}, inplace=True)
+		timings.rename(columns={"time": data[x]['name']}, inplace=True)
 		timingList.append(timings)
 		
 	frame = pd.concat(timingList, axis=1).fillna(0).sort_index()
-	print(frame)
+	print(df)
 
 	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
 

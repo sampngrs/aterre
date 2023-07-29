@@ -38,7 +38,6 @@ import DataSelector from './DataSelector.jsx'
 
 
 function Portrait (props) {
-  {console.log(props.stroke)}
       
     const { crimeData = [] } = props;
     const [fullscreen, setFullscreen] = useState(false)
@@ -55,19 +54,18 @@ function Portrait (props) {
 
     useEffect(() => {
       setActiveData((crimeData[activeKey].data.axes) ? Object.values(crimeData[activeKey].data.legend).map((x, index) => ({'index': index, 'value': x, active: true, 'color': areaColors[index]})) : null)
-      console.log('crimeData')
     }, [crimeData, activeKey])
 
-    console.log(crimeData)
     const graph = 
 
     (activeData) ? 
-    <div onClick={() => setFullscreen(!fullscreen)} className='hoverPop' style = {{width: '100%',  paddingBottom:5, paddingLeft: 5, marginTop: 5}}>
+    <div onClick={() => setFullscreen(!fullscreen)} className='hoverPop' style = {{ width: '100%',  paddingBottom:5, paddingLeft: 5, marginTop: 5}}>
 
         <AreaChart
           data={crimeData[activeKey].data.axes}
-          margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
+         
           width = {260} height = {200}
+          style={{color:'currentColor'}}
         >
           {props.children}
 

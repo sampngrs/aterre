@@ -10,7 +10,9 @@ function Window (props) {
     const {active} = props;
     const {animClass = "about"} = props;
     const {width = 500} = props;
-    const {height = 300} = props
+    const {height = "auto"} = props
+    
+    
 
 return (
 

@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMapEvent, useMap, Rectangle, Pane, MarkerClusterGroup} from 'react-leaflet';
 import { Icon } from "leaflet";
 import logo from './logo.svg';
@@ -50,18 +50,23 @@ import './App.scss';
 import MultiSelector from './MultiSelector';
 
 function ControlAccordion(props){
-
+  const scrollRef = useRef(null)
+  const executeScroll = () => {
+    setTimeout(() => {
+      scrollRef.current.scrollIntoView({behavior: "smooth", inline:'start'})   
+      }, 200)
+  }
+   
   const { timingData } = props; 
   const { stations } = props;
   const { crimeData } = props
-  console.log(timingData)
 
   const reformat = {}
   
 
   const [filteredFood, setFilteredFood] = useState('bar;biergarten;cafe;fast_food;food_court;ice_cream;pub;restaurant'.split(';'))
-  const categories = [... new Set(props.stations.filter((cat) => (!!cat.tags.amenity) || (!!cat.tags.shop)).map((cat) => (cat.tags.amenity) ? cat.tags.amenity : cat.tags.shop))]
-  console.log(categories)
+  const categories = [... new Set(props.stations.filter((cat) => (!!cat.tags.amenity) || (!!cat.tags.shop)).map((cat) => (cat.tags.amenity) ? cat.tags.amenity : cat.tags.shop))].sort()
+  
   const tab_names = 
   [{name: 'Food', data: props.stations.filter(data => (!!data.tags.amenity) && (filteredFood.includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'amenity'}, 
     {name: 'Schools', data: props.stations.filter(data => (!!data.tags.amenity) && (['university', 'school'].includes(data.tags.amenity))).sort((a,b) => a.distance - b.distance ), image: 'school' }, 
@@ -69,9 +74,7 @@ function ControlAccordion(props){
 
   const [activeTab, setActiveTab] = useState('Food')
 
-  useEffect(() => {
-    // console.log(activeTab)
-  }, [activeTab]);
+
 
 
 
@@ -161,7 +164,7 @@ function ControlAccordion(props){
 
               {
             data.sort((b,a) => a.y - b.y ).map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={filteredFood.includes(entry.x) ? colourScale[index] : 'grey'} style={{outline: 'none'}} onClick={(e) => (setFilteredFood(arrayTest(filteredFood, entry.x)), console.log(filteredFood))}
+              <Cell key={`cell-${index}`} fill={filteredFood.includes(entry.x) ? colourScale[index] : 'grey'} style={{outline: 'none'}} onClick={(e) => setFilteredFood(arrayTest(filteredFood, entry.x))}
               />
             ))
           }
@@ -196,9 +199,9 @@ function ControlAccordion(props){
 
   let timer;
 
-  const [selCat, setSelCat] = useState(categories[0])
+  const [selCat, setSelCat] = useState(null)
 
-  let scale = chroma.scale(['#373B44', '#4286f4']).mode('lch').colors(Object.values(timingData[0].data.legend).length > 0 ? Object.values(timingData[0].data.legend).length : 2)
+  let scale = timingData[0] ? chroma.scale(['#373B44', '#4286f4']).mode('lch').colors(Object.values(timingData[0].data.legend).length > 0 ? Object.values(timingData[0].data.legend).length : 2) : null;
 
   return (
    <Accordion className="controlAccordion" flush>
@@ -221,7 +224,6 @@ function ControlAccordion(props){
     <span style = {{fontSize: 12, color:'black', zIndex:1, opacity:0.5}} className ='centered'> Sorry, our transport timing data <br /> currently only works with the <br /> Underground and DLR services. </span> : null }
 
     </div>  
-    {console.log(timingData[0])}
     <Portrait scale={['#373B44', '#4286f4']} crimeData = {[timingData[0]]} stroke = ' '>
       
           <XAxis 
@@ -229,13 +231,15 @@ function ControlAccordion(props){
           tickFormatter={(t) => t + "'" } 
           allowDuplicatedCategory={true} 
           height={20} 
-          tick={{fill: 'black', fontSize: 9}} />
+          tick={{fill: 'currentColor', fontSize: 9}} />
 
           <YAxis 
           tickSize={3} 
-          tick={{fill: 'black', fontSize: 9}} 
+          tick={{fill: 'currentColor', fontSize: 9}}
           tickFormatter={(t) => t} 
           width={30}/>
+
+           
 
       <CartesianGrid strokeDasharray="3 3" />
 
@@ -244,7 +248,6 @@ function ControlAccordion(props){
 
 
 
-   {console.log(stations)}
   {/* <Portrait color='blue' crimeData = {timingData} /> */}
 
 
@@ -298,13 +301,16 @@ function ControlAccordion(props){
           allowDuplicatedCategory={false} 
           height={20} 
           tickFormatter={(t) => "'" + (t.getFullYear() % 100 >= 10 ? t.getFullYear() % 100 : "0" + t.getFullYear() % 100) } 
-          tick={{fill: 'black', fontSize: 9}} />
+          tick={{fill: 'currentColor', fontSize: 9}} />
 
           <YAxis 
           tickSize={3} 
-          tick={{fill: 'black', fontSize: 9}} 
+          tick={{fill: 'currentColor', fontSize: 9}} 
           tickFormatter={(t) => t > 1000 ? t/1000 + 'k' : t} 
           width={30}/>
+
+          <CartesianGrid strokeDasharray="3 3" />
+
     
     </Portrait> 
 
@@ -320,7 +326,7 @@ function ControlAccordion(props){
   <div
   style={{
       backgroundColor: 'lightgrey',
-      width:'80%',
+      width:'85%',
       height: 1
   }}
   />
@@ -331,11 +337,11 @@ function ControlAccordion(props){
   (selCat) 
   
   ? 
-
+  
   <div style={{width:'100%', zIndex:1}} >
     <div style={{overflow:'visible', display:'flex', alignItems:'center', marginBottom:'10px'}}> 
     <div className='hideScrollbar' style={{padding:'5px 0px 5px 0px', marginLeft:'10px', display:'flex', width:'100%', whiteSpace:'nowrap', overflowX:'scroll', overflowY:'hidden'}} >
-    {categories.map((cat) =>  <t className ={ cat == selCat ? 'bshadow' : 'ListItem'} style={{fontSize:'14px', cursor:'pointer', borderRadius:'3px', margin:'5px', padding:'5px 10px 5px 10px', color: cat == selCat ?  'white': 'black', backgroundColor: cat == selCat ? 'black' : ''}} onClick={() => setSelCat(cat)}>{_.startCase(cat)}</t> )}
+    {categories.map((cat) =>  <t ref={cat == selCat ? scrollRef : null} className ={ cat == selCat ? 'bshadow' : 'ListItem'} style={{fontSize:'14px', cursor:'pointer', borderRadius:'3px', margin:'5px', padding:'5px 10px 5px 10px', color: cat == selCat ?  'white': 'black', backgroundColor: cat == selCat ? 'black' : ''}} onClick={() => (setSelCat(cat), executeScroll())}>{_.startCase(cat)}</t> )}
     </div>
     {/* <b style={{margin:'5px', borderRadius:'3px', padding: '5px'}}> X </b>  */}
     <img style={{cursor:'pointer', margin: '10px'}} src={'static/UI/close.svg'} height={'15px'} width = {'15px'} onClick={() => setSelCat(null)}/>
@@ -354,7 +360,7 @@ function ControlAccordion(props){
       alignItems:'flex-start',
       gap:'10px'}}> 
 
-          <img src={'static/amenity/' + selCat +'.svg' } height='15px' width = '15px' />
+          {/* <img src={'static/amenity/' + selCat +'.svg' } height='15px' width = '15px' /> */}
 
           
           <div style={{
@@ -368,7 +374,7 @@ function ControlAccordion(props){
               justifyContent:'space-between',
               flexDirection:'row'}}>
                 
-                <span style={{fontSize: 11}}> {school.tags.name} </span>  
+                <span style={{fontSize: 11, fontWeight:'bold'}}> {school.tags.name} </span>  
                 <span style={{fontSize: 9, flex: '0 0 auto'}}> {(Math.round(school.distance * 100) / 100).toFixed(2) + ' km'} </span>
 
               </div> 
@@ -420,15 +426,18 @@ function ControlAccordion(props){
   
   
   : 
-    
+
   <Grid>
     {categories.map((item) =>
-      <GridItem key={item} category={item} onClick={setSelCat}>
+      <GridItem key={item} category={item} onClick={setSelCat} scroll={executeScroll}>
         {/* <img style={{fill:'white', color:'white'}} src={'static/amenity/' + item +'.svg'} height='25px' width = '25px' fill='white' color='white'/> */}
+        <div style={{display:'flex', flexDirection:'column', textAlign:'center', alignItems:'center', gap:'5px', justifyContent:'center'}}>
         <svg style={{height:'20px', width:'20px'}}>
           <use href={'static/amenity/' + item +'.svg#' + item }></use>
         </svg>
-        {/* <t style={{fontSize:'12px'}}>{_.startCase(item)}</t> */}
+        <span style={{fontSize:'8px'}}>{_.startCase(item)}</span>
+        </div>
+        
       </GridItem>
     )}
   </Grid>
@@ -499,7 +508,6 @@ function CustomLabel (props) {
 }
 
 function CustomLabelComponent (props) {
-  console.log(props)
   const { x, y } = props;
   const imgHeight = 20;
   const imgWidth = 20;
@@ -670,7 +678,6 @@ function TransportItem(props) {
           
 
     </div>
-    {console.log(props.data)}
     {(props.data.tags.line) ? 
 
     (props.data.tags.line.split(';').map((item) => 
