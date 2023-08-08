@@ -4,7 +4,7 @@ def get_current_time():
 from datetime import datetime
 import json
 import math
-from flask import Flask, redirect
+from flask import Flask, redirect, Response
 import requests
 import pandas as pd
 import urllib.parse
@@ -29,8 +29,48 @@ def get_current_time():
 
 @app.route('/time/<postcode>')
 def get_current_location(postcode):
-
 	return getLatLong(postcode)
+
+@app.route('/location-search/<search>')
+def get_search_coordinates(search):
+	print(search)
+	return(get_coordinates(search))
+	# return getLatLong(search)
+
+
+
+def get_coordinates(search):
+	url = f"https://nominatim.openstreetmap.org/search.php?q={search}&format=json&limit=1"
+	print(url)
+	# nomi = pgeocode.Nominatim('GB')
+	# data = nomi.query_postal_code(postcode)
+	# print(data)
+	# if (51.258477 <= data.latitude <= 51.721924) & (-0.546570 <= data.longitude <= 0.285645):
+	# 		return redirect('/surrounding/{}/{}'.format(data.latitude, data.longitude))
+	# else:
+	# 		return {'response': 'The location is not in London!'}, 504
+
+	response = requests.get(url)
+	if len(response.json()) == 0: return {'message': 'no results'}, 400
+	if response.status_code == 200: 
+		print(response.json())
+		# -0.546570,51.258477,0.285645,51.721924
+		latitude = float(response.json()[0]["lat"])
+		longitude = float(response.json()[0]["lon"])
+		return {
+			'display_name': response.json()[0]["display_name"],
+			'latitude': latitude, 
+			'longitude':longitude
+			}
+	else: return {"response" : "The location is not in London!"}, 400
+
+
+	# 	if (51.258477 <= latitude <= 51.721924) & (-0.546570 <= longitude <= 0.285645):
+	# 		return redirect('/surrounding/{}/{}'.format(response.json()[0]["lat"], response.json()[0]["lon"]))
+	# 	else:
+	# 		return {'response': 'The location is not in London!'}, 504
+	# else:
+	# 	return {'response': 'error'}, 504
 
 def getLatLong(postcode):
 	url = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(postcode) +'?format=json'
@@ -93,7 +133,7 @@ def get_transport(lat, lon):
 		if(i['type'] == 'node'):
 			data['elements'][x]['bearing'] = calc_bearing(float(lat), float(lon), data['elements'][x]['lat'], data['elements'][x]['lon'] )            
 
-	return data
+	return json.dumps(data, indent = 3)
 
 	
 
