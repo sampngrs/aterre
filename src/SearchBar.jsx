@@ -9,20 +9,13 @@ import useFetch from './utils/useFetch';
 
 export default function SearchBar (props) {
     const inputRef = useRef();
-    const [search, setSearch] = useState();
-    const {loading, data, error} = useFetch(search?`/location-search/${search}`:'');
+    
     const runSearch = () => {
         if (!inputRef.current.value) return;
         else {
-            setSearch(inputRef.current.value)
+            props.setSearch(inputRef.current.value)
         }
     }
-
-    useEffect(() => {
-        if(data) {props.setCoords(data)}
-    }, [data])
-
-
 
     return (
         <div style={{position:'relative', width:'100%'}}>
@@ -41,19 +34,19 @@ export default function SearchBar (props) {
             </motion.button>
 
         </form>
+        
         <AnimatePresence>
-        {loading &&
+        {props.searchLoading &&
         <motion.div 
         initial={{ y: -30}}
         animate={{ y:0, opacity: 1}}
-        exit={{ y: -30, transition: {
-            delay:1
-        }}}
+        exit={{ y: -30}}
         style={{fontSize:'0.05px', backgroundColor:'black', display:'flex', justifyContent:'center', position:'absolute', bottom:-25, width:'100%', borderRadius:'5px', height:'40px'}}>
             {/* <span style={{position:'absolute', bottom:0, fontSize:'14px'}}>This div says something important</span> */}
             <ThreeDotsWave />
             </motion.div>}
-        </AnimatePresence>
+        </AnimatePresence> 
+        
         </div>
 
     );

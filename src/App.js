@@ -10,7 +10,8 @@ import ThreeDotsWave from './Components/ThreeDotsWave';
 import './Components/LoadingTextGradient.scss';
 import LoadingTextGradient from './Components/LoadingTextGradient';
 import { motion, AnimatePresence} from 'framer-motion';
-
+import _, { reject } from 'lodash';
+import './Tabulate.scss';
 
 
 
@@ -65,8 +66,13 @@ function ControlPanel (props) {
     const inputRef = useRef()
     const {coords} = props
     const {setCoords} = props
-    var {loading, data, error} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
+    const [search, setSearch] = useState();
+    const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
+    const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords.latitude?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
 
+    useEffect(() => {
+        if (searchData) props.setCoords(searchData)
+    }, [searchData])
 
     return (
 
@@ -74,14 +80,16 @@ function ControlPanel (props) {
             
             <div style={{width:'100%'}}>
 
-                <SearchBar setCoords={props.setCoords}/>
+                <SearchBar setSearch={setSearch} searchLoading={searchLoading}/>
+                
                 <AnimatePresence>
-                    {!loading && 
+                    {/* {((!resultsLoading && resultsData) || (resultsLoading) && (!searchLoading)) &&  */}
+                    {((!searchLoading) && (!resultsLoading && resultsData) || (resultsLoading)) &&
                     <motion.div 
-                    style={{overflow:'hidden'}}
-                    initial={{ maxHeight:0}}
+                    style={{overflowX:'hidden', overflowY:'scroll'}}
+                    initial={{maxHeight:0}}
                     animate={{ 
-                        maxHeight:400,
+                        maxHeight:600,
                         opacity: 1, 
                         transition: {
                             duration:1
@@ -90,11 +98,18 @@ function ControlPanel (props) {
                     exit={{ 
                         maxHeight:0, 
                         transition: {
-                        delay:1
-                    }}}>
-                        {/* <span style={{position:'absolute', bottom:0, fontSize:'14px'}}>This div says something important</span> */}
+                            duration:0.5
+                        }
+                       }}>
                         <KeyIndicators />
+
+
+                        {<Tabulate data={(resultsData) ? resultsData.elements : []} tabKeys={['tags.shop', 'tags.amenity', 'tags.public_transport', 'tags.leisure']}/>}
                         </motion.div>}
+                
+
+                
+                
                 </AnimatePresence>
                 {/* {data && <KeyIndicators /> } */}
 
@@ -119,5 +134,49 @@ function KeyIndicators(props) {
         
     );
 }
+
+
+
+function Tabulate({
+    data = [], 
+    tabKeys=['category'],
+    renderItem}){
+
+    function rejectNil(array){
+        return _.reject(array, ({ path, category }) =>
+        _.isNil(path) || _.isNil(category)
+        )
+    }
+    
+    const path = _.uniqBy(data.map((e, i) => _.at(e, tabKeys).map((e, i) => ({
+        'path': (e) ? tabKeys[i] : null, 
+        'category': e
+        })
+    )).map((e) => rejectNil(e)), (e) => e[0].category).map((e, i) => e[0]);
+
+    
+    // console.log(path.map((e, i) => e[0].category))
+
+    const [selCat, setSelCat] = useState('convenience')
+
+    return(
+        <div style={{overflow:'hidden'}}>
+            <div className='tabulate'>
+                
+                {_.sortBy(path, ['category']).map((e, i) => 
+                <t className= {e.category == selCat ? 'tab tab-selected' : 'tab'} 
+                onClick={() => setSelCat(e.category)}>{_.startCase(e.category)}</t>)}
+
+            </div>
+            <ul>
+            {data.filter((e, i) => _.at(e, path[_.findIndex(path, {category: selCat})].path) == selCat).map((e, i) => <p style={{fontSize:'11px'}}>{e.tags.name}</p>)}
+            </ul>
+
+        </div>
+
+        
+        
+    );
+    }
 
 export default MainScreen;

@@ -22,7 +22,7 @@ function randomIntFromInterval(min, max) { // min and max included
 
     return (
         <div style={{display:"flex", gap:"5px", flexWrap:"wrap"}}>
-            {[...Array(randomIntFromInterval(2, 5))].map((e, i) => 
+            {[4, 3, 2].map((e, i) => 
             
             <motion.div 
                 variants={BackgroundVariants}
