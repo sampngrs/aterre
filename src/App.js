@@ -122,7 +122,7 @@ function ControlPanel (props) {
 
 function KeyIndicators(props) {
     return (
-        <div style={{display:'flex', flexDirection:'column', gap:'10px', paddingTop:'30px', paddingBottom:'30px'}}>
+        <div style={{display:'flex', flexDirection:'column', gap:'10px', paddingTop:'30px', paddingBottom:'15px'}}>
         {[...Array(3)].map((e, i) =>
         <div style={{display:'flex', gap:'20px', marginLeft:'20px', marginRight:'20px'}}> 
         <svg  style={{height:'18px', width:'18px',flexShrink:0}}>
@@ -154,9 +154,6 @@ function Tabulate({
         })
     )).map((e) => rejectNil(e)), (e) => e[0].category).map((e, i) => e[0]);
 
-    
-    // console.log(path.map((e, i) => e[0].category))
-
     const [selCat, setSelCat] = useState('convenience')
 
     return(
@@ -164,8 +161,21 @@ function Tabulate({
             <div className='tabulate'>
                 
                 {_.sortBy(path, ['category']).map((e, i) => 
-                <t className= {e.category == selCat ? 'tab tab-selected' : 'tab'} 
-                onClick={() => setSelCat(e.category)}>{_.startCase(e.category)}</t>)}
+                
+                <div key={e.category}style={{position:'relative'}} className= 'tab' >
+
+                    {selCat === e.category && 
+             <motion.div layoutId='active-pill' transition={{duration:0.3}}className= 'pill' />}
+
+                <span className='text'
+                onClick={() => setSelCat(e.category)}>{_.startCase(e.category)}
+                </span>
+    
+            
+                </div>
+                )}
+
+                
 
             </div>
             <ul>

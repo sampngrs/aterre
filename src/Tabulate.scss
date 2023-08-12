@@ -4,18 +4,28 @@
     gap:5px;
     white-space: nowrap;
     overflow:auto;
-    margin:5px
+    margin: 15px 5px;
 }
 
-.tab{
+.tab {
     font-size: 14px;
+    position: relative;
     cursor: pointer;
-    border-radius: 3px;
     padding: 5px 10px 5px 10px;
+    color: var(--color-foreground);
 }
 
-.tab-selected{
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+.text{
+    mix-blend-mode:difference;
+    
+}
+
+
+.pill {
+    inset: 0;
+    z-index: 0;
+    position:absolute;
+    background-color:  var(--color-foreground);
+    border-radius: 5px;
 }
 
