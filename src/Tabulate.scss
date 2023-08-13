@@ -2,30 +2,37 @@
     display:flex;
     flex-direction: row;
     gap:5px;
+    overflow-x: scroll;
     white-space: nowrap;
-    overflow:auto;
     margin: 15px 5px;
+    overflow-y: hidden;
 }
 
 .tab {
-    font-size: 14px;
     position: relative;
-    cursor: pointer;
     padding: 5px 10px 5px 10px;
     color: var(--color-foreground);
+    font-size: 14px;
+    background-color:  var(--color-background);
+    cursor: pointer;
 }
-
-.text{
-    mix-blend-mode:difference;
-    
-}
-
 
 .pill {
+    position: absolute;
     inset: 0;
-    z-index: 0;
-    position:absolute;
-    background-color:  var(--color-foreground);
+    z-index: 10;
+    background-color:  white;
+    mix-blend-mode: difference;
     border-radius: 5px;
 }
+
+.tabulate::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabulate {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
 

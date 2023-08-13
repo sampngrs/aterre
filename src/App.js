@@ -78,18 +78,17 @@ function ControlPanel (props) {
 
         <div className='control-accordion'>
             
-            <div style={{width:'100%'}}>
-
                 <SearchBar setSearch={setSearch} searchLoading={searchLoading}/>
-                
+
+                <div style={{width:'100%', height:'100%', overflow:'scroll'}}>
                 <AnimatePresence>
                     {/* {((!resultsLoading && resultsData) || (resultsLoading) && (!searchLoading)) &&  */}
                     {((!searchLoading) && (!resultsLoading && resultsData) || (resultsLoading)) &&
-                    <motion.div 
-                    style={{overflowX:'hidden', overflowY:'scroll'}}
+                    <motion.div
                     initial={{maxHeight:0}}
                     animate={{ 
-                        maxHeight:600,
+                        maxHeight:'100%',
+                        overflow:'scroll',
                         opacity: 1, 
                         transition: {
                             duration:1
@@ -102,8 +101,6 @@ function ControlPanel (props) {
                         }
                        }}>
                         <KeyIndicators />
-
-
                         {<Tabulate data={(resultsData) ? resultsData.elements : []} tabKeys={['tags.shop', 'tags.amenity', 'tags.public_transport', 'tags.leisure']}/>}
                         </motion.div>}
                 
@@ -111,10 +108,10 @@ function ControlPanel (props) {
                 
                 
                 </AnimatePresence>
+                </div>
                 {/* {data && <KeyIndicators /> } */}
 
 
-            </div>
 
         </div>
     );
@@ -157,32 +154,37 @@ function Tabulate({
     const [selCat, setSelCat] = useState('convenience')
 
     return(
-        <div style={{overflow:'hidden'}}>
+        <div style={{position:'relative'}}>
             <div className='tabulate'>
-                
-                {_.sortBy(path, ['category']).map((e, i) => 
-                
-                <div key={e.category}style={{position:'relative'}} className= 'tab' >
+            {_.sortBy(path, ['category']).map((e, i) => 
 
-                    {selCat === e.category && 
-             <motion.div layoutId='active-pill' transition={{duration:0.3}}className= 'pill' />}
+                <div
+                key={e.category}
+                onClick={() => setSelCat(e.category)}
+                className='tab'
+                >
+                
+                {selCat === e.category && 
+                <motion.div
+                layoutId="active-pill"
+                className="pill"
+                transition={{type:'spring', duration:0.4, bounce:0.2}}
+                style={{mixBlendMode:'exclusion'}}
+                
+                />}
 
-                <span className='text'
-                onClick={() => setSelCat(e.category)}>{_.startCase(e.category)}
-                </span>
-    
-            
+                {_.startCase(e.category)}
+                    
+
                 </div>
+
                 )}
 
-                
+            </div>
+
+            {data.filter((e, i) => _.at(e, path[_.findIndex(path, {category: selCat})].path) == selCat).map((e, i) => <p style={{fontSize:'11px'}}>{e.tags.name}</p>)}
 
             </div>
-            <ul>
-            {data.filter((e, i) => _.at(e, path[_.findIndex(path, {category: selCat})].path) == selCat).map((e, i) => <p style={{fontSize:'11px'}}>{e.tags.name}</p>)}
-            </ul>
-
-        </div>
 
         
         
