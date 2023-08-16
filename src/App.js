@@ -1,6 +1,8 @@
 
 import Map from './Map';
 import React, { useState, useEffect, useRef } from 'react';
+import _, { reject } from 'lodash';
+import { motion, AnimatePresence} from 'framer-motion';
 import { Icon } from "leaflet";
 import './App.scss';
 import NavigationBar from './NavigationBar';
@@ -9,18 +11,26 @@ import useFetch from './utils/useFetch';
 import ThreeDotsWave from './Components/ThreeDotsWave';
 import './Components/LoadingTextGradient.scss';
 import LoadingTextGradient from './Components/LoadingTextGradient';
-import { motion, AnimatePresence} from 'framer-motion';
-import _, { reject } from 'lodash';
-import './Tabulate.scss';
 
+import Tabulate from './Tabulate';
 
 
 function MainScreen () {
     const [coords, setCoords] = useState([51.500841300000005, -0.14298629208606997]);
+    const [pins, setPins] = useState([])
+
+        // For example: 
+        // {
+        // 'name': 'Pizza Express', 
+        // 'type':'restaurant', 
+        // 'latitute':'51.1234', 
+        // 'longitude':'-0.13245', 
+        // 'color':'black'
+        // }
+
+
     const mapRef = useRef();
     const [isDark, setIsDark] = useState(false)
-    
-    
 
     //use fetch on coords. fetch will get data and set main as loading.
 
@@ -38,9 +48,9 @@ function MainScreen () {
             
         <NavigationBar isDark={isDark} toggleDark={() => setIsDark(!isDark)}/>
 
-        <ControlPanel coords = {coords} setCoords={setCoords}/>
+        <ControlPanel coords = {coords} setCoords={setCoords} setPins={setPins}/>
         
-        <Map isDark={isDark} coords={coords} mapRef={mapRef} />
+        <Map isDark={isDark} coords={coords} mapRef={mapRef} pins={pins}/>
 
         </div>
         
@@ -101,7 +111,7 @@ function ControlPanel (props) {
                         }
                        }}>
                         <KeyIndicators />
-                        {<Tabulate data={(resultsData) ? resultsData.elements : []} tabKeys={['tags.shop', 'tags.amenity', 'tags.public_transport', 'tags.leisure']}/>}
+                        {<Tabulate setPins={props.setPins} data={(resultsData) ? resultsData.elements : []} tabKeys={['tags.shop', 'tags.amenity', 'tags.public_transport', 'tags.leisure']}/>}
                         </motion.div>}
                 
 
@@ -132,63 +142,5 @@ function KeyIndicators(props) {
     );
 }
 
-
-
-function Tabulate({
-    data = [], 
-    tabKeys=['category'],
-    renderItem}){
-
-    function rejectNil(array){
-        return _.reject(array, ({ path, category }) =>
-        _.isNil(path) || _.isNil(category)
-        )
-    }
-    
-    const path = _.uniqBy(data.map((e, i) => _.at(e, tabKeys).map((e, i) => ({
-        'path': (e) ? tabKeys[i] : null, 
-        'category': e
-        })
-    )).map((e) => rejectNil(e)), (e) => e[0].category).map((e, i) => e[0]);
-
-    const [selCat, setSelCat] = useState('convenience')
-
-    return(
-        <div style={{position:'relative'}}>
-            <div className='tabulate'>
-            {_.sortBy(path, ['category']).map((e, i) => 
-
-                <div
-                key={e.category}
-                onClick={() => setSelCat(e.category)}
-                className='tab'
-                >
-                
-                {selCat === e.category && 
-                <motion.div
-                layoutId="active-pill"
-                className="pill"
-                transition={{type:'spring', duration:0.4, bounce:0.2}}
-                style={{mixBlendMode:'exclusion'}}
-                
-                />}
-
-                {_.startCase(e.category)}
-                    
-
-                </div>
-
-                )}
-
-            </div>
-
-            {data.filter((e, i) => _.at(e, path[_.findIndex(path, {category: selCat})].path) == selCat).map((e, i) => <p style={{fontSize:'11px'}}>{e.tags.name}</p>)}
-
-            </div>
-
-        
-        
-    );
-    }
 
 export default MainScreen;

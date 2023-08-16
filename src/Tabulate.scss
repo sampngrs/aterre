@@ -4,15 +4,16 @@
     gap:5px;
     overflow-x: scroll;
     white-space: nowrap;
-    margin: 15px 5px;
+    margin: 5px 5px 10px;
+    font-size:'10px';
     overflow-y: hidden;
 }
 
 .tab {
     position: relative;
+
     padding: 5px 10px 5px 10px;
     color: var(--color-foreground);
-    font-size: 14px;
     background-color:  var(--color-background);
     cursor: pointer;
 }

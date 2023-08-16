@@ -1,11 +1,14 @@
 
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMapEvent, useMap, Rectangle, Pane, MarkerClusterGroup} from 'react-leaflet';
+import { MapContainer, TileLayer, Tooltip, Marker, Popup, ZoomControl, useMapEvent, useMap, Rectangle, Pane, MarkerClusterGroup} from 'react-leaflet';
 import './App.scss';
+import * as L from "leaflet";
 import { useEffect } from 'react';
+import { renderToString } from 'react-dom/server';
 
 function Map (props) {
   const {coords} = props;
   const {mapRef} = props;
+  const {pins} = props;
 
     const tileUrl = `https://{s}.basemaps.cartocdn.com/${props.isDark ? 'dark' : 'light'}_nolabels/{z}/{x}/{y}{r}.png` // CLean, grey without labels 
     
@@ -13,6 +16,23 @@ function Map (props) {
       // console.log(coords)
       if (mapRef.current) props.mapRef.current.flyTo([coords.latitude, coords.longitude], 16, {animate:true})
     }, [coords])
+
+    useEffect(() => {
+      if (mapRef){
+
+        // For example: 
+        // {
+        // 'name': 'Pizza Express', 
+        // 'type':'restaurant', 
+        // 'latitute':'51.1234', 
+        // 'longitude':'-0.13245', 
+        // 'color':'black'
+        // }
+
+          pins.map((e) => {console.log(e)})
+      }
+
+  }, [pins])
     
     
     return (
@@ -40,8 +60,20 @@ function Map (props) {
 
               <ZoomControl position='topright' />
 
-              <Pane name="custom-page" style={{ zIndex: 1 }}>
-              </Pane>
+              {/* <Pane name="custom-page" style={{ zIndex: 1 }}>
+              </Pane> */}
+              {pins.map((e) => 
+              <Marker position={[e.latitude, e.longitude]} icon ={L.divIcon({
+                html: renderToString(e.icon),
+                className: "svg-icon",
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+              })}>
+              <Tooltip>{e.name}</Tooltip>
+              </Marker>)}
+              
+
+              {/* Map through pins and add SVG layer for each element*/}
 
 
               </MapContainer>
