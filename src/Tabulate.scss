@@ -4,7 +4,8 @@
     gap:5px;
     white-space: nowrap;
     overflow: scroll;
-    margin: 5px 5px 10px;
+    flex-shrink: 10;
+    // margin: 5px 10px 5px;
     font-size:'10px';
 }
 

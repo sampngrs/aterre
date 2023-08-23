@@ -4,6 +4,7 @@ def get_current_time():
 from datetime import datetime
 import json
 import math
+from math import radians, cos, sin, asin, sqrt
 from flask import Flask, redirect, Response
 import requests
 import pandas as pd
@@ -132,6 +133,7 @@ def get_transport(lat, lon):
 				data['elements'][x]['crowding'] = [{'time': x[0:4], 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
 		if(i['type'] == 'node'):
 			data['elements'][x]['bearing'] = calc_bearing(float(lat), float(lon), data['elements'][x]['lat'], data['elements'][x]['lon'] )            
+			data['elements'][x]['distance'] = haversine(float(lon), float(lat), data['elements'][x]['lon'], data['elements'][x]['lat'])
 
 	return json.dumps(data, indent = 3)
 
@@ -281,8 +283,21 @@ def shutdown():
     shutdown_server()
     return 'Server shutting down...'
 
-
-
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    # Radius of earth in kilometers is 6371
+    km = 6371* c
+    return km
 
 def calc_bearing(lat1, long1, lat2, long2):
   # Convert latitude and longitude to radians

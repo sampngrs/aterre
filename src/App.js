@@ -1,39 +1,31 @@
 
 import Map from './Map';
-import React, { useState, useEffect, useRef } from 'react';
-import _, { reject } from 'lodash';
+import React, { useState, useEffect, useRef, useContext, createContext} from 'react';
+import _, { isNil, reject } from 'lodash';
 import { motion, AnimatePresence} from 'framer-motion';
 import { Icon } from "leaflet";
 import './App.scss';
 import NavigationBar from './NavigationBar';
 import SearchBar from './SearchBar';
 import useFetch from './utils/useFetch';
-import ThreeDotsWave from './Components/ThreeDotsWave';
 import './Components/LoadingTextGradient.scss';
 import LoadingTextGradient from './Components/LoadingTextGradient';
+import Transport from './Transport';
 
-import Tabulate from './Tabulate';
+import {Headings, HeaderItem} from './Components/Headings';
 
+import Places from './Places';
+
+
+
+const ThemeContext = createContext(null);
 
 function MainScreen () {
-    const [coords, setCoords] = useState([51.500841300000005, -0.14298629208606997]);
+    const [coords, setCoords] = useState();
     const [pins, setPins] = useState([])
-
-        // For example: 
-        // {
-        // 'name': 'Pizza Express', 
-        // 'type':'restaurant', 
-        // 'latitute':'51.1234', 
-        // 'longitude':'-0.13245', 
-        // 'color':'black'
-        // }
-
-
     const mapRef = useRef();
-    const [isDark, setIsDark] = useState(false)
-
-    //use fetch on coords. fetch will get data and set main as loading.
-
+    const [isDark, setIsDark] = useState(true)
+    
     useEffect(() => {
         if (isDark) {
           document.body.classList.add('dark');
@@ -43,6 +35,7 @@ function MainScreen () {
       }, [isDark]); 
 
     return (
+        <ThemeContext.Provider value={isDark}>
         
         <div className='main-body' style={{position:'relative'}}>
             
@@ -53,6 +46,7 @@ function MainScreen () {
         <Map isDark={isDark} coords={coords} mapRef={mapRef} pins={pins}/>
 
         </div>
+        </ThemeContext.Provider>
         
 
     );
@@ -78,7 +72,7 @@ function ControlPanel (props) {
     const {setCoords} = props
     const [search, setSearch] = useState();
     const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
-    const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords.latitude?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
+    const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
 
     useEffect(() => {
         if (searchData) props.setCoords(searchData)
@@ -92,13 +86,11 @@ function ControlPanel (props) {
 
                 <div style={{width:'100%', height:'100%', overflow:'scroll'}}>
                 <AnimatePresence>
-                    {/* {((!resultsLoading && resultsData) || (resultsLoading) && (!searchLoading)) &&  */}
                     {((!searchLoading) && (!resultsLoading && resultsData) || (resultsLoading)) &&
                     <motion.div
                     initial={{maxHeight:0}}
                     animate={{ 
                         maxHeight:'100%',
-                        overflow:'scroll',
                         opacity: 1, 
                         transition: {
                             duration:1
@@ -110,22 +102,35 @@ function ControlPanel (props) {
                             duration:0.5
                         }
                        }}>
-                        <KeyIndicators />
-                        {<Tabulate setPins={props.setPins} data={(resultsData) ? resultsData.elements : []} tabKeys={['tags.shop', 'tags.amenity', 'tags.public_transport', 'tags.leisure']}/>}
-                        </motion.div>}
-                
 
-                
+                        <KeyIndicators />
+
+                       <Headings>
+
+                            <HeaderItem title="Places">
+                                <Places data={resultsData} setPins={props.setPins}/>
+                            </HeaderItem>
+
+                            <HeaderItem title="Transport"> 
+                                <Transport data={resultsData} /> 
+                            </HeaderItem>
+
+                            <HeaderItem title="Data">
+                                content 3
+                            </HeaderItem>
+
+                       </Headings>
+
+                        </motion.div>}
                 
                 </AnimatePresence>
                 </div>
-                {/* {data && <KeyIndicators /> } */}
-
 
 
         </div>
     );
 }
+
 
 function KeyIndicators(props) {
     return (
@@ -141,6 +146,5 @@ function KeyIndicators(props) {
         
     );
 }
-
 
 export default MainScreen;

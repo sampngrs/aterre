@@ -1,10 +1,13 @@
 import './App.scss';
 import './NavigationBar.scss'
 import { motion } from 'framer-motion';
+import { useContext } from 'react';
+// import { ThemeContext } from './App';
 
 
 function NavigationBar (props) {
-    const {isDark} = props
+    // const isDark = useContext(ThemeContext);
+    const isDark = props.isDark;
     const displayMode = isDark ? 'dark': 'light'
     const displayColor = isDark ? 'white': 'black'
 

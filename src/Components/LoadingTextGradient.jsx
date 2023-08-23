@@ -7,7 +7,8 @@ function randomIntFromInterval(min, max) { // min and max included
   export default function LoadingTextGradient({
 
     height = '16px', 
-    width = '15px'})
+    width, 
+    units = 3})
 
     {
 
@@ -22,7 +23,7 @@ function randomIntFromInterval(min, max) { // min and max included
 
     return (
         <div style={{display:"flex", gap:"5px", flexWrap:"wrap"}}>
-            {[4, 3, 2].map((e, i) => 
+            {Array.apply(null, Array(units)).map((e, i) => 
             
             <motion.div 
                 variants={BackgroundVariants}
@@ -33,7 +34,7 @@ function randomIntFromInterval(min, max) { // min and max included
                     repeat: Infinity,
                     duration: 5
                 }}
-                className='test' style={{height: height, width: randomIntFromInterval(80, 20)}}>
+                className='test' style={{height: height, width: width ? width : randomIntFromInterval(80, 20)}}>
                 
         </motion.div>)}
         </div>

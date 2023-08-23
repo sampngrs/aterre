@@ -1,0 +1,180 @@
+import _ from "lodash";
+import PopCard from "./Components/PopCard";
+import { useRef } from "react";
+
+export default function Transport(props) {
+    const transportRef = useRef(null)
+
+    const {data} = props;
+
+    const tubeLines = {
+        'Bakerloo': {
+          'Hex': '#B36305',
+          'RGB': '179, 99, 5',
+          'CMYK': '0%, 45%, 97%, 30%',
+          'Pantone': 'Pantone 470 C'
+        },
+        'Central': {
+          'Hex': '#E32017',
+          'RGB': '227, 32, 23',
+          'CMYK': '0%, 86%, 90%, 11%',
+          'Pantone': 'Pantone 485 C'
+        },
+        'Circle': {
+          'Hex': '#FFD300',
+          'RGB': '255, 211, 0',
+          'CMYK': '0%, 17%, 100%, 0%',
+          'Pantone': 'Pantone 116 C'
+        },
+        'District': {
+          'Hex': '#00782A',
+          'RGB': '0, 120, 42',
+          'CMYK': '100%, 0%, 65%, 53%',
+          'Pantone': 'Pantone 356 C'
+        },
+        'Elizabeth Line': {
+          'Hex': '#6950a1',
+          'RGB': '105, 80, 161',
+          'CMYK': '35%, 50%, 0%, 37%',
+          'Pantone': 'Pantone 266 C'
+        },
+        'Hammersmith & City': {
+          'Hex': '#F3A9BB',
+          'RGB': '243, 169, 187',
+          'CMYK': '0%, 30%, 23%, 5%',
+          'Pantone': 'Pantone 197 C'
+        },
+        'Jubilee': {
+          'Hex': '#A0A5A9',
+          'RGB': '160, 165, 169',
+          'CMYK': '5%, 2%, 0%, 34%',
+          'Pantone': 'Pantone 430 C'
+        },
+        'Metropolitan': {
+          'Hex': '#9B0056',
+          'RGB': '155, 0, 86',
+          'CMYK': '0%, 100%, 45%, 39%',
+          'Pantone': 'Pantone 235 C'
+        },
+        'Northern': {
+          'Hex': '#000000',
+          'RGB': '0, 0, 0',
+          'CMYK': '0%, 0%, 0%, 100%',
+          'Pantone': 'Pantone Black C'
+        },
+        'Piccadilly': {
+          'Hex': '#003688',
+          'RGB': '0, 54, 136',
+          'CMYK': '100%, 60%, 0%, 47%',
+          'Pantone': 'Pantone 072 C'
+        },
+        'Victoria': {
+          'Hex': '#0098D4',
+          'RGB': '0, 152, 212',
+          'CMYK': '100%, 28%, 0%, 17%',
+          'Pantone': 'Pantone 299 C'
+        },
+        'Waterloo & City': {
+          'Hex': '#95CDBA',
+          'RGB': '149, 205, 186',
+          'CMYK': '27%, 0%, 9%, 20%',
+          'Pantone': 'Pantone 338 C'
+        },
+        'Docklands Light Railway': {
+          'Hex': '#00A4A7',
+          'RGB': '0, 164, 167',
+          'CMYK': '100%, 2%, 0%, 35%',
+          'Pantone': 'Pantone 326 C'
+        },
+        'London Overground': {
+          'Hex': '#EE7C0E',
+          'RGB': '238, 124, 14',
+          'CMYK': '0%, 48%, 94%, 7%',
+          'Pantone': 'Pantone 158 C'
+        },
+        'London Trams': {
+          'Hex': '#84B817',
+          'RGB': '132, 184, 23',
+          'CMYK': '28%, 0%, 88%, 28%',
+          'Pantone': 'Pantone 368 C'
+        },
+        'Emirates Cable Car': {
+          'Hex': '#E21836',
+          'RGB': '226, 24, 54',
+          'CMYK': '0%, 89%, 76%, 11%',
+          'Pantone': 'Pantone 485 C'
+        }
+      };
+
+
+    const transportHeader = ({e}) => (
+
+        <>
+            <div style={{display:'flex', gap:"5px", alignItems:"center"}}>
+                            
+                <svg style={{height:'10px', width:'10px'}}>
+                            <use href={'static/amenity/station.svg#station'} />
+                </svg>
+
+                <span>{e.tags.name}</span>
+
+            </div>
+
+            {e.distance ? <div>
+            <span style={{fontSize:'9px'}}>
+            {Number((e.distance * 1000 / 1.42 / 60).toFixed(0)) + " min"}
+            </span>
+
+            <svg style={{height:'15', width:'15'}}>
+                    <use href={'static/amenity/walking.svg#walking'} />
+            </svg>
+
+            </div> : null} 
+        </>
+    );
+
+    const transportContent = ({e}) => { 
+        
+        const lines = (_.at(e.tags, ['line'])[0]) ? (_.at(e.tags, ['line'])[0]).split(';') : []
+
+        if (_.at(e.tags, ['network'])[0].split(';').includes("Docklands Light Railway")) lines.push("Docklands Light Railway") 
+        if (_.at(e.tags, ['network'])[0].split(';').includes("London Overground")) lines.push("London Overground") 
+        if (_.at(e.tags, ['network'])[0].split(';').includes("Elizabeth Line")) lines.push("Elizabeth Line") 
+
+        return (
+        <>        
+        {
+        lines.map((e) => 
+        
+        <div style={{display:'flex', flexDirection:"row", alignItems:"center", gap:'5px'}}>
+        <div style={{height:"3px", width:'10px', backgroundColor:tubeLines[e]['Hex']}}></div>
+        <span>{e}</span>
+        </div>
+        
+        )}
+
+        {/* <span>{e.tags['naptan:AtcoCode']}</span> */}
+        </>
+    )}
+  
+
+    return (
+      <div 
+      ref={transportRef}
+      style={{display:'flex', gap:'10px', flexDirection:"column"}}>
+      {data ? 
+            data.elements
+            
+                .filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0])))
+                .map((e) => 
+                
+                <PopCard e={e} header={transportHeader} content={transportContent} parentRef={transportRef}/>
+
+                )
+            
+            : []}
+      </div>
+        
+
+    );
+}
