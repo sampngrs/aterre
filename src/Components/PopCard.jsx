@@ -14,8 +14,6 @@ export default function PopCard(props){
     const {content} = props;
     const {parentRef} = props;
 
-    console.log(e)
-
     return (
         <motion.div 
         ref={rowRef}
@@ -37,8 +35,8 @@ export default function PopCard(props){
         animate={{
             top: 
             rowRef.current?.getBoundingClientRect()['y'] + height > parentRef.current?.getBoundingClientRect()['bottom'] ? 
-            - (rowRef.current?.getBoundingClientRect()['y'] + height - parentRef.current?.getBoundingClientRect()['bottom']) : '0px',
-            left:'-5px', right:'-5px', maxHeight:'300px', overflow:'hidden'}}
+            - (rowRef.current?.getBoundingClientRect()['y'] + height - parentRef.current?.getBoundingClientRect()['bottom']) + 5 : '0px',
+            left:'-5px', right:'-5px', maxHeight:'300px', overflow:'scroll'}}
         style={{position:'absolute', zIndex:'1', borderRadius:'3px', padding:'5px', backgroundColor:'var(--color-foreground)'}}> 
         
         {/* The list item */}

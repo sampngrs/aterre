@@ -10,9 +10,11 @@ import requests
 import pandas as pd
 import urllib.parse
 import pgeocode
+from requests.auth import HTTPBasicAuth
 import json
 import pandas as pd
 import os
+import itertools
 import reverse_geocoder as rg
 import geopandas as gpd
 
@@ -52,7 +54,7 @@ def get_coordinates(search):
 	# 		return {'response': 'The location is not in London!'}, 504
 
 	response = requests.get(url)
-	if len(response.json()) == 0: return {'message': 'no results'}, 400
+	if len(response.json()) == 0: return {'error': 'no results'}, 400
 	if response.status_code == 200: 
 		print(response.json())
 		# -0.546570,51.258477,0.285645,51.721924
@@ -63,7 +65,7 @@ def get_coordinates(search):
 			'latitude': latitude, 
 			'longitude':longitude
 			}
-	else: return {"response" : "The location is not in London!"}, 400
+	else: return {"error": "The location is not in London!"}, 400
 
 
 	# 	if (51.258477 <= latitude <= 51.721924) & (-0.546570 <= longitude <= 0.285645):
@@ -255,6 +257,18 @@ def shutdown_server():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
 
+@app.route('/station_attributes/<stations>')
+def station_attributes(stations):
+	stations= ','.join(stations.split(';')) if ';' in stations else stations
+	tfl_key = "989f86eedb184ed6a343b6026599c6c5"
+	payload = {}
+	headers = {}
+	url = f'https://api.tfl.gov.uk/StopPoint/{stations}'
+	print(url)
+	response = (requests.request("GET", url, headers=headers,auth=HTTPBasicAuth('app_key', tfl_key), data=payload))
+	return [{'name': x['commonName'], 'naptanId': x['naptanId'], 'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+
+
 def parse_data(data):
     n_c = []
     n_json = {}
@@ -319,3 +333,4 @@ def calc_bearing(lat1, long1, lat2, long2):
   bearing = (bearing + 360) % 360
   
   return bearing
+

@@ -54,18 +54,6 @@ function MainScreen () {
 
 }
 
-function Fetch({
-    uri, 
-    renderSuccess, 
-    loadingFallback = <p>...loading</p>, 
-    renderError = error => (<pre>{JSON.stringify(error, null, 2)}</pre>)
-}) {
-    const {loading, data, error} = useFetch(uri);
-    if (loading) return loadingFallback;
-    if (error) return renderError(error);
-    if (data) return renderSuccess({data});
-}
-
 function ControlPanel (props) {
     const inputRef = useRef()
     const {coords} = props
@@ -73,6 +61,8 @@ function ControlPanel (props) {
     const [search, setSearch] = useState();
     const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
     const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
+    const {loading: stationsLoading, data: stationsData, error: stationsError} = useFetch(resultsData?`/station_attributes/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(';')}`:'');
+
 
     useEffect(() => {
         if (searchData) props.setCoords(searchData)
@@ -112,7 +102,7 @@ function ControlPanel (props) {
                             </HeaderItem>
 
                             <HeaderItem title="Transport"> 
-                                <Transport data={resultsData} /> 
+                                <Transport data={stationsData} /> 
                             </HeaderItem>
 
                             <HeaderItem title="Data">
@@ -136,10 +126,11 @@ function KeyIndicators(props) {
     return (
         <div style={{display:'flex', flexDirection:'column', gap:'10px', paddingTop:'30px', paddingBottom:'15px'}}>
         {[...Array(3)].map((e, i) =>
-        <div style={{display:'flex', gap:'20px', marginLeft:'20px', marginRight:'20px'}}> 
+        <div style={{display:'flex', gap:'20px', marginLeft:'20px', alignItems:'center', marginRight:'20px'}}> 
         <svg  style={{height:'18px', width:'18px',flexShrink:0}}>
         <use href={`static/UI/check.svg#check`}></use>
         </svg>  
+        {/* <span> This is a sentence</span> */}
         <LoadingTextGradient height='16px'/>
         </div>)}
         </div>

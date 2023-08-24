@@ -49,19 +49,21 @@ function Map (props) {
               {/* <Pane name="custom-page" style={{ zIndex: 1 }}>
               </Pane> */}
               {pins.map((e) => 
-              <Marker position={[e.latitude, e.longitude]} icon ={ L.divIcon({
+              <Marker position={[e.latitude, e.longitude]} icon ={L.divIcon({
                 html: renderToString(e.icon),
                 className: "svg-icon",
                 iconSize: [30, 30],
                 iconAnchor: [15, 15]
-              })}>
+              })} >
               <Tooltip>{e.name}</Tooltip>
               </Marker>)}
 
               
 
               {props.coords ?
-              <Marker position={[coords.latitude, coords.longitude]} icon ={L.divIcon({
+              <Marker 
+              // draggable={true} 
+              position={[coords.latitude, coords.longitude]} icon ={L.divIcon({
                 html: renderToString(
                 <svg style={{height:'30px', width:'30px'}}>
                   <circle cx="50%" cy="50%" r="45%" fill="red" stroke="none" strokeWidth="2" />
