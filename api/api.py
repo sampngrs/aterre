@@ -53,8 +53,10 @@ def get_coordinates(search):
 	# else:
 	# 		return {'response': 'The location is not in London!'}, 504
 
+	# return {"error": "The location is not in London!"}, 400
+
 	response = requests.get(url)
-	if len(response.json()) == 0: return {'error': 'no results'}, 400
+	if len(response.json()) == 0: return {'error': 'There were no results, please try again.'}, 400
 	if response.status_code == 200: 
 		print(response.json())
 		# -0.546570,51.258477,0.285645,51.721924
@@ -266,7 +268,8 @@ def station_attributes(stations):
 	url = f'https://api.tfl.gov.uk/StopPoint/{stations}'
 	print(url)
 	response = (requests.request("GET", url, headers=headers,auth=HTTPBasicAuth('app_key', tfl_key), data=payload))
-	return [{'name': x['commonName'], 'naptanId': x['naptanId'], 'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+	return [{'name': x['commonName'], 'naptanId': x['naptanId'], 'attributes': {y['key'].lower(): y['value'] for y in x['additionalProperties']}, 'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+
 
 
 def parse_data(data):

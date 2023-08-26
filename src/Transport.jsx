@@ -2,12 +2,18 @@ import _ from "lodash";
 import PopCard from "./Components/PopCard";
 import { useRef } from "react";
 import useFetch, { Fetch } from "./utils/useFetch";
+import { scale } from "chroma-js";
+
+
+export function TransportSummary({props}) {
+  return <div></div>
+}
 
 export default function Transport(props) {
     const transportRef = useRef(null)
 
     const {data} = props;
-    console.log(data)
+    console.log(data);
 
     const tubeLines = {
       'bakerloo': {
@@ -113,7 +119,6 @@ export default function Transport(props) {
 
         <>
             <div style={{display:'flex', gap:"5px", alignItems:"center"}}>
-
                 {e.lineModes.filter((e) => e.type != 'bus').map((e) =>  
                 <svg style={{height:'10', width:'10px'}}>
                   <use href={`static/amenity/${_.snakeCase(e.type)}.svg#${_.snakeCase(e.type)}`} />  
@@ -137,19 +142,49 @@ export default function Transport(props) {
     );
 
     const transportContent = ({e}) => { 
+        // const attributes = _.keys(e.attributes)
+        const attributes = ['lifts', 'wifi','car park','toilets']
         
+        const pass = (value) => {
+            if (value == 'yes' || value > 0) return false
+            else return true
+        }
       
         return (
-        <>        
+        <>
+        <div style={{display:'flex', gap:"5px"}}>
+        {/* <svg viewBox="0 0 24 24" height="15px" >
+              <use href={'static/amenity/wifi.svg#wifi'} />
+              {_.at(e, ['attributes.WiFi']) != 'yes' && <rect x='0' y = '10.5' height = '3' width='24' fill= 'red' transform="rotate(45 12 12)"/>}
+              
+        </svg>
+
+        <svg viewBox="0 0 24 24" height="15px">
+              <use href={'static/amenity/parking.svg#parking'} scale='0.8' />
+              {_.at(e, ['attributes.Car park']) != 'yes' && <rect x='0' y = '10.5' height = '3' width='24' fill= 'red' transform="rotate(45 12 12)"/>}
+        </svg> */}
+
+        {attributes.map((a) => 
+        <svg viewBox="0 0 24 24" width="15px" >
+              <use href={`static/amenity/${_.snakeCase(a)}.svg#${_.snakeCase(a)}`} />
+              {pass(_.at(e, [`[attributes.${a}]`])) && <rect x='0' y = '10.5' height = '3' width='24' fill= 'red' transform="rotate(45 12 12)"/>}
+              
+        </svg>
+        )}
+
+        </div>
+        <div style={{display:'flex', flexWrap:'wrap', gap:'5px'}}>       
+
+        {/* <span>National Rail and London Underground Lines</span>  */}
         {
         e.lines.map((e) =>
         
-        <div style={{display:'flex', flexDirection:"row", alignItems:"center", gap:'5px'}}>
+        <div style={{display:'flex', flexDirection:"row", alignItems:"center", gap:'5px', minWidth:'45%'}}>
 
 
         {/* <div style={{height:"3px", width:'10px', backgroundColor: e in tubeLines ? tubeLines[e].Hex : '#cf4a37'}} /> */}
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" style={{height:'10px'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" height = '10px'>
         <g fill="black">
         <rect x="0" y="35" height="30" width="150" fill={e in tubeLines ? tubeLines[e].Hex : '#cf4a37'} />
           <circle
@@ -163,16 +198,17 @@ export default function Transport(props) {
 
          
         </g>
-      </svg>
+        </svg>
 
         <span>{_.startCase(e)}</span>
         </div>
-
+        
 
         
         )}
 
         {/* <span>{e.naptanId}</span> */}
+        </div>
         </>
     )}
   

@@ -15,10 +15,10 @@ import Transport from './Transport';
 import {Headings, HeaderItem} from './Components/Headings';
 
 import Places from './Places';
+import AlertContext from './AlertContext';
+import { AlertProvider } from './AlertContext';
 
 
-
-const ThemeContext = createContext(null);
 
 function MainScreen () {
     const [coords, setCoords] = useState();
@@ -35,18 +35,18 @@ function MainScreen () {
       }, [isDark]); 
 
     return (
-        <ThemeContext.Provider value={isDark}>
+        <AlertProvider>
         
         <div className='main-body' style={{position:'relative'}}>
             
         <NavigationBar isDark={isDark} toggleDark={() => setIsDark(!isDark)}/>
 
-        <ControlPanel coords = {coords} setCoords={setCoords} setPins={setPins}/>
+        {React.useMemo(() => <ControlPanel coords = {coords} setCoords={setCoords} setPins={setPins}/>, [coords])}
         
-        <Map isDark={isDark} coords={coords} mapRef={mapRef} pins={pins}/>
+        <Map isDark={isDark} coords={coords} setCoords={setCoords} mapRef={mapRef} pins={pins}/>
 
         </div>
-        </ThemeContext.Provider>
+        </AlertProvider>
         
 
     );
@@ -57,16 +57,18 @@ function MainScreen () {
 function ControlPanel (props) {
     const inputRef = useRef()
     const {coords} = props
+    const [, setAlert]= useContext(AlertContext)
     const {setCoords} = props
     const [search, setSearch] = useState();
     const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
     const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
     const {loading: stationsLoading, data: stationsData, error: stationsError} = useFetch(resultsData?`/station_attributes/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(';')}`:'');
 
-
     useEffect(() => {
         if (searchData) props.setCoords(searchData)
     }, [searchData])
+
+    
 
     return (
 

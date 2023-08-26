@@ -1,16 +1,29 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect, useContext} from "react";
+import AlertContext from "../AlertContext";
+import ThreeDotsWave from "../Components/ThreeDotsWave";
 
-export default function useFetch(uri) {
+export default function useFetch(uri, text) {
     const [data, setData] = useState();
     const [error, setError] = useState();
     const [loading, setLoading] = useState(false);
+    const [alert, setAlert] = useContext(AlertContext)
+
+    useEffect(() => {
+        if (loading) setAlert({text: <ThreeDotsWave />, type:'loading', active:loading})
+    }, [loading])
+
+    useEffect(() => {
+        setAlert({text: <ThreeDotsWave />, type:'loading', active:loading})
+    }, [data])
 
     function handleError(error){
-        console.log(error.error)
-        setData()
+        console.log(error)
         setLoading(false)
+        setAlert({text: <span>{error.error}</span>, type:'error'})
+        
+        
+        
     }
-
     useEffect(() => {
         if (!uri) return;
         setLoading(true)
@@ -24,6 +37,7 @@ export default function useFetch(uri) {
             .catch(handleError)
         }, [uri]);
     
+        
 
     return {loading, data, error};
 }

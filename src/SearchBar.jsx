@@ -1,11 +1,13 @@
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useContext } from 'react';
 import './App.scss';
 import './SearchBar.scss'
 import { motion, useReducedMotion, AnimatePresence} from 'framer-motion';
 import ThreeDotsWave from './Components/ThreeDotsWave';
 
 import useFetch from './utils/useFetch';
+import Alert from './Alert';
+import AlertContext from './AlertContext';
 
 export default function SearchBar (props) {
     const inputRef = useRef();
@@ -14,8 +16,10 @@ export default function SearchBar (props) {
         if (!inputRef.current.value) return;
         else {
             props.setSearch(inputRef.current.value)
+            
         }
     }
+    
 
     return (
         <div style={{position:'relative', width:'100%'}}>
@@ -35,7 +39,11 @@ export default function SearchBar (props) {
 
         </form>
         
-        <AnimatePresence>
+        
+        
+        <Alert />
+
+        {/* <AnimatePresence>
         {props.searchLoading &&
         <motion.div 
         initial={{ y: -30}}
@@ -43,9 +51,9 @@ export default function SearchBar (props) {
         exit={{ y: -30}}
         style={{fontSize:'0.05px', backgroundColor:'black', display:'flex', justifyContent:'center', position:'absolute', bottom:-25, width:'100%', borderRadius:'5px', height:'40px'}}>
             {/* <span style={{position:'absolute', bottom:0, fontSize:'14px'}}>This div says something important</span> */}
-            <ThreeDotsWave />
-            </motion.div>}
-        </AnimatePresence> 
+            {/* <ThreeDotsWave /> */}
+            {/* </motion.div>} */}
+        {/* // </AnimatePresence>  */} 
         
         </div>
 

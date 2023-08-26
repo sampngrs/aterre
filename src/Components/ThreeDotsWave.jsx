@@ -6,14 +6,15 @@ const LoadingDot = {
   display: "block",
   width: "0.3rem",
   height: "0.3rem",
-  background:'white',
+  background:'var(--color-background)',
   borderRadius: "50%"
 };
 
 const LoadingContainer = {
   display: "flex",
   justifyContent: "space-around",
-  gap:'10px'
+  gap:'10px',
+  margin:'10px'
 };
 
 const ContainerVariants = {

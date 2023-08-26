@@ -2,15 +2,16 @@
 import { MapContainer, TileLayer, Tooltip, Marker, Popup, ZoomControl, useMapEvent, useMap, Rectangle, Pane, MarkerClusterGroup} from 'react-leaflet';
 import './App.scss';
 import * as L from "leaflet";
-import { useEffect } from 'react';
+import { useEffect, useMemo} from 'react';
 import { renderToString } from 'react-dom/server';
 
 function Map (props) {
   const {coords} = props;
+  const {setCoords} = props;
   const {mapRef} = props;
   const {pins} = props;
 
-    const tileUrl = `https://{s}.basemaps.cartocdn.com/${props.isDark ? 'dark' : 'light'}_nolabels/{z}/{x}/{y}{r}.png` // CLean, grey without labels 
+    const tileUrl = `https://{s}.basemaps.cartocdn.com/${props.isDark ? 'dark' : 'light'}_all/{z}/{x}/{y}{r}.png` // CLean, grey without labels 
     
     useEffect(() => {
       if (mapRef.current) props.mapRef.current.flyTo([coords.latitude, coords.longitude], 15, {animate:true})
@@ -19,6 +20,12 @@ function Map (props) {
     useEffect(() => {
       // if (mapRef && coords) props.mapRef.current.flyTo([coords.latitude, coords.longitude], 14, {animate:true})
     }, [pins])
+
+    const eventHandlers = useMemo(() => ({
+      dragend(e) {
+        setCoords({'latitude': e.target.getLatLng()['lat'], 'longitude':e.target.getLatLng()['lng']})
+      },
+    }), [])
     
     
     return (
@@ -62,7 +69,8 @@ function Map (props) {
 
               {props.coords ?
               <Marker 
-              // draggable={true} 
+              draggable={true} 
+              eventHandlers={eventHandlers}
               position={[coords.latitude, coords.longitude]} icon ={L.divIcon({
                 html: renderToString(
                 <svg style={{height:'30px', width:'30px'}}>
