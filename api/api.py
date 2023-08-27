@@ -180,15 +180,14 @@ def get_proximity(code):
 
 	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
 
-	result =  [
-	{
+	result = {
 	'id': 'transport', 
 	'type':'area',
 	'title': 'Travel Time', 
 	'data': {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
 	'axes': [{'x': x, 'data': y} for x, y in form_dic.items()]}
 	}
-	]
+	
 
 	# return {'response': 'error'}, 504
 
@@ -251,16 +250,10 @@ def bfs(Adj, s):  # Adj: adjacency list, s: starting vertex
                     frontier.append(v)  # O(1) amortized, add to border
         levels.append(frontier)  # add the new level to levels
     return parent, dist
-
-
-def shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-
+    
 @app.route('/station_attributes/<stations>')
-def station_attributes(stations):
+@app.route('/station_attributes/<stations>/<latitude>/<longitude>')
+def station_attributes(stations, latitude = None, longitude = None):
 	stations= ','.join(stations.split(';')) if ';' in stations else stations
 	tfl_key = "989f86eedb184ed6a343b6026599c6c5"
 	payload = {}
@@ -268,9 +261,25 @@ def station_attributes(stations):
 	url = f'https://api.tfl.gov.uk/StopPoint/{stations}'
 	print(url)
 	response = (requests.request("GET", url, headers=headers,auth=HTTPBasicAuth('app_key', tfl_key), data=payload))
-	return [{'name': x['commonName'], 'naptanId': x['naptanId'], 'attributes': {y['key'].lower(): y['value'] for y in x['additionalProperties']}, 'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+	stations = [{
+		'name': x['commonName'], 
+		'naptanId': x['naptanId'], 
+		'crowding': get_crowding(x['naptanId']),
+		'attributes': {y['key'].lower(): y['value'] for y in x['additionalProperties']},
+		'distance': haversine(float(longitude), float(latitude), x['lon'], x['lat']) if (latitude != longitude) else None,
+		'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),
+		'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+	return stations
 
-
+def get_crowding(name):
+	print(name)
+	if name in [os.path.splitext(x)[0] for x in os.listdir('static/Data/Sets/Transport')]: 
+				bbb = pd.read_excel(f"static/Data/Sets/Transport/{name}.xlsx",index_col=0)
+				bbb.drop(['NAPTAN'], axis = 1, inplace = True)
+				return [{'time': int(x[0:4]), 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
+	else:
+		print(name)
+		return None 
 
 def parse_data(data):
     n_c = []

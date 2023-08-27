@@ -14,6 +14,10 @@ export default function PopCard(props){
     const {content} = props;
     const {parentRef} = props;
 
+    let bodyContent = content({e})
+    let headerContent = header({e})
+
+
     return (
         <motion.div 
         ref={rowRef}
@@ -23,7 +27,7 @@ export default function PopCard(props){
         
         {/* The list item */}
         
-        {header({e})}
+        {headerContent}
 
 
         {opened && 
@@ -42,16 +46,21 @@ export default function PopCard(props){
         {/* The list item */}
 
         <div 
-        style={{position:'relative', color:'var(--color-background)', fontSize:'12px', borderRadius:'3px', display:'flex', flexDirection:'column', gap:'5px', padding:'5px'}}>
+        style={{position:'relative', color:'var(--color-background)', fontSize:'12px', borderRadius:'3px', display:'flex', flexDirection:'column', gap:'15px', margin:'5px'}}>
         
         <div
         style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
 
-        {header({e})}
+        {headerContent}
+
 
         </div>
 
-        {content({e})}
+        {bodyContent}
+
+
+
+        
 
         </div>
         </motion.div>

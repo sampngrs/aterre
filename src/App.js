@@ -63,12 +63,13 @@ function ControlPanel (props) {
     const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
     const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
     const {loading: stationsLoading, data: stationsData, error: stationsError} = useFetch(resultsData?`/station_attributes/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(';')}`:'');
+    const {loading: accessLoading, data: accessData, error: accessError} = useFetch(resultsData?`/access/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(',')}`:'');
 
     useEffect(() => {
         if (searchData) props.setCoords(searchData)
     }, [searchData])
 
-    
+    console.log(accessData)
 
     return (
 
@@ -104,7 +105,7 @@ function ControlPanel (props) {
                             </HeaderItem>
 
                             <HeaderItem title="Transport"> 
-                                <Transport data={stationsData} /> 
+                                <Transport data={stationsData} accessData={accessData} coords={coords}/> 
                             </HeaderItem>
 
                             <HeaderItem title="Data">

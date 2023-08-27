@@ -1,19 +1,24 @@
 import _ from "lodash";
 import PopCard from "./Components/PopCard";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import useFetch, { Fetch } from "./utils/useFetch";
 import { scale } from "chroma-js";
-
+import * as d3 from "d3";
+import ChartTraffic from "./ChartTraffic";
+import ChartTransportTime from "./ChartTransportTime.jsx";
 
 export function TransportSummary({props}) {
+  
   return <div></div>
 }
 
 export default function Transport(props) {
     const transportRef = useRef(null)
-
+    
+    const {coords} = props;
     const {data} = props;
-    console.log(data);
+    const {accessData} = props;
+    
 
     const tubeLines = {
       'bakerloo': {
@@ -149,21 +154,17 @@ export default function Transport(props) {
             if (value == 'yes' || value > 0) return false
             else return true
         }
-      
+        
         return (
         <>
-        <div style={{display:'flex', gap:"5px"}}>
-        {/* <svg viewBox="0 0 24 24" height="15px" >
-              <use href={'static/amenity/wifi.svg#wifi'} />
-              {_.at(e, ['attributes.WiFi']) != 'yes' && <rect x='0' y = '10.5' height = '3' width='24' fill= 'red' transform="rotate(45 12 12)"/>}
-              
-        </svg>
 
-        <svg viewBox="0 0 24 24" height="15px">
-              <use href={'static/amenity/parking.svg#parking'} scale='0.8' />
-              {_.at(e, ['attributes.Car park']) != 'yes' && <rect x='0' y = '10.5' height = '3' width='24' fill= 'red' transform="rotate(45 12 12)"/>}
-        </svg> */}
+        {e.crowding && <div style={{height:'150px'}}>
+          <ChartTraffic data={e.crowding} />
+        </div>}
+      
+        <div style={{display:'flex', gap:"5px", justifyContent:"flex-start"}}>
 
+        
         {attributes.map((a) => 
         <svg viewBox="0 0 24 24" width="15px" >
               <use href={`static/amenity/${_.snakeCase(a)}.svg#${_.snakeCase(a)}`} />
@@ -173,6 +174,7 @@ export default function Transport(props) {
         )}
 
         </div>
+        
         <div style={{display:'flex', flexWrap:'wrap', gap:'5px'}}>       
 
         {/* <span>National Rail and London Underground Lines</span>  */}
@@ -211,18 +213,27 @@ export default function Transport(props) {
         </div>
         </>
     )}
+
+    
   
 
     return (
       <div 
       ref={transportRef}
       style={{display:'flex', gap:'10px', flexDirection:"column"}}>
+
+      <div style={{height:'200px', width:'100%'}}>
+
+      {(accessData) && <ChartTransportTime data={accessData} />}
+
+
+      </div>
       {data ? 
             data
             
                 .map((e) => 
                 
-                <PopCard e={e} header={transportHeader} content={transportContent} parentRef={transportRef}/>
+               <PopCard e={e} header={transportHeader} content={transportContent} parentRef={transportRef}/>
 
                 )
             
