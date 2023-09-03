@@ -1,6 +1,6 @@
 
 import Map from './Map';
-import React, { useState, useEffect, useRef, useContext, createContext} from 'react';
+import React, { useState, useEffect, useRef, useContext, createContext, useMemo} from 'react';
 import _, { isNil, reject } from 'lodash';
 import { motion, AnimatePresence} from 'framer-motion';
 import { Icon } from "leaflet";
@@ -11,12 +11,15 @@ import useFetch from './utils/useFetch';
 import './Components/LoadingTextGradient.scss';
 import LoadingTextGradient from './Components/LoadingTextGradient';
 import Transport from './Transport';
-
+import Data from './Data.jsx'
 import {Headings, HeaderItem} from './Components/Headings';
 
 import Places from './Places';
 import AlertContext from './AlertContext';
 import { AlertProvider } from './AlertContext';
+
+import LocationContext from './LocationContext';
+import { LocationProvider } from './LocationContext';
 
 
 
@@ -25,6 +28,7 @@ function MainScreen () {
     const [pins, setPins] = useState([])
     const mapRef = useRef();
     const [isDark, setIsDark] = useState(true)
+    
     
     useEffect(() => {
         if (isDark) {
@@ -36,6 +40,7 @@ function MainScreen () {
 
     return (
         <AlertProvider>
+        <LocationProvider>
         
         <div className='main-body' style={{position:'relative'}}>
             
@@ -46,6 +51,7 @@ function MainScreen () {
         <Map isDark={isDark} coords={coords} setCoords={setCoords} mapRef={mapRef} pins={pins}/>
 
         </div>
+        </LocationProvider>
         </AlertProvider>
         
 
@@ -58,26 +64,44 @@ function ControlPanel (props) {
     const inputRef = useRef()
     const {coords} = props
     const [, setAlert]= useContext(AlertContext)
+    const [location, setLocation] = useContext(LocationContext)
     const {setCoords} = props
     const [search, setSearch] = useState();
+
     const {loading: searchLoading, data: searchData, error: searchError} = useFetch(search?`/location-search/${search}`:'');
+    
     const {loading: resultsLoading, data: resultsData, error: resultsError} = useFetch(coords?`/surrounding/${coords.latitude}/${coords.longitude}`:'');
+    
     const {loading: stationsLoading, data: stationsData, error: stationsError} = useFetch(resultsData?`/station_attributes/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(';')}`:'');
-    const {loading: accessLoading, data: accessData, error: accessError} = useFetch(resultsData?`/access/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(',')}`:'');
+
+    
+    const {loading: accessLoading, data: accessData, error: accessError} = useFetch(
+        useMemo(() => resultsData?`/access/${coords.latitude}/${coords.longitude}/${resultsData?.elements.filter((e) => !(_.isNil(_.at(e, ['tags.public_transport'])[0]))).map((e) => e.tags['naptan:AtcoCode']).join(',')}`:'', [stationsData])
+        );
+
+    const {loading: econLoading, data: econData, error: econError} = useFetch(
+        useMemo(() => location?`/crime/${location.latitude}/${location.longitude}`:'', [location])
+        );
+
 
     useEffect(() => {
-        if (searchData) props.setCoords(searchData)
+        if (searchData) props.setCoords(searchData) 
+        if (searchData) setLocation(searchData)
     }, [searchData])
 
-    console.log(accessData)
+    useEffect(() => {
+        if (searchData) setLocation(coords)
+    }, [coords])
+
 
     return (
 
         <div className='control-accordion'>
             
                 <SearchBar setSearch={setSearch} searchLoading={searchLoading}/>
-
-                <div style={{width:'100%', height:'100%', overflow:'scroll'}}>
+    
+                <div style={{width:'100%', height:'100%', overflowY:'scroll'}}>
+                <div style={{overflowX:'visible'}}>
                 <AnimatePresence>
                     {((!searchLoading) && (!resultsLoading && resultsData) || (resultsLoading)) &&
                     <motion.div
@@ -108,8 +132,8 @@ function ControlPanel (props) {
                                 <Transport data={stationsData} accessData={accessData} coords={coords}/> 
                             </HeaderItem>
 
-                            <HeaderItem title="Data">
-                                content 3
+                            <HeaderItem title="Insights">
+                                <Data econData={econData}/>
                             </HeaderItem>
 
                        </Headings>
@@ -118,8 +142,7 @@ function ControlPanel (props) {
                 
                 </AnimatePresence>
                 </div>
-
-
+                       </div>
         </div>
     );
 }

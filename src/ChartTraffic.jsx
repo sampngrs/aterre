@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import { useCallback, useMemo } from "react"
 import _ from "lodash"
 import { motion } from "framer-motion"
+import './Chart.css'
 
 export default function ChartTraffic({data}) {
     const [ref, {width, height}] = useMeasure()
@@ -39,7 +40,6 @@ function ChartInner({height, width, data}) {
     let averageLine = d3.line().x(((d, i) => xScale(i))).y((d) => yScale(d.mean))(data)
 
     let result = line(data)
-    console.log(result)
 
     
     return (
@@ -47,36 +47,6 @@ function ChartInner({height, width, data}) {
             <svg height={height} width={width} viewBox={`0 0 ${width} ${height}`} 
             >
                 
-                {/* <motion.line 
-                initial={{pathLength:0}}
-                animate={{pathLength:1}}
-                transition={{duration:1, delay:1}}
-                            y1 = {height - margin.bottom}
-                            y2 = {margin.top}
-                            x1 = '50'
-                            x2 = '50'
-                            stroke = 'currentColor'
-                            // strokeDasharray={'1,10'} 
-                            />
-
-                    <motion.g 
-                    initial={{opacity:0}}
-                    animate={{opacity:1}}
-                    transition={{duration:1}}
-                    transform={`translate(50, ${margin.top - 5})`}>  
-                
-                    <path scale={0.5} d="M12 2.25a9.73 9.73 0 0 0-9.49 7.5H0v4.5h2.51a9.73 9.73 0 0 0 9.49 7.5c4.62 0 8.48-3.2 9.49-7.5H24v-4.5h-2.51A9.73 9.73 0 0 0 12 2.25zM12 6c2.5 0 4.66 1.56 5.56 3.75H6.44A6.02 6.02 0 0 1 12 6zm-5.56 8.25h11.12A6.02 6.02 0 0 1 12 18a6.02 6.02 0 0 1-5.56-3.75Z"/>
-
-                    <text 
-                    
-                    style={{fontSize:'9px', fontWeight:"lighter"}} 
-                    stroke="currentColor" 
-                    textAnchor="left"
-                   
-                    > 
-                    Green Park Station
-                    </text>
-                    </motion.g> */}
                 
                 {xScale.ticks().map((time, index) => (
 
@@ -111,18 +81,22 @@ function ChartInner({height, width, data}) {
                     Total station entries and exists over average 24 hour period
                         
                     </text>
-
+            <g className='container'>
             <motion.path 
+                className='shape'
                 d={result}
                 whileHover={{strokeWidth:'4px'}}
                 fill='none' stroke='currentColor' strokeWidth={'1px'}/>
 
             <motion.path 
+            className='shape'
             d={averageLine} 
             whileHover={{strokeWidth:'4px'}}
                 fill='none' stroke='red' strokeWidth={'1px'}/>
 
-            {yScale.ticks().map(((occ, index) => (
+            </g>
+
+            {yScale.ticks(8).map(((occ, index) => (
                     <g transform={`translate(0 ${yScale(occ)})`}>
                     
                     {/* <line 

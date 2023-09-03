@@ -3,7 +3,7 @@ import { Transition } from "react-transition-group";
 
 // delete when no longer needed
 function getRandomInt(max) {
-    return 2
+    return 4
     return Math.floor(Math.random() * max);
   }
 
@@ -74,7 +74,7 @@ export default function Gallery(props) {
             <div style={{position:'absolute', display:'flex', opacity:0.8, inset:0, width:'100%', height:'100%', padding:'10px', color:'white', justifyContent:"space-between", alignItems:'flex-end'}} > 
             
             <div style={{display:"flex", flexDirection:"column", height:"30px"}}>
-            <span style={{fontSize:'12px'}}>Circolo Popolare</span> 
+            <span style={{fontSize:'12px'}}>Jin Kichi, Hampstead Village</span> 
             <span style={{fontSize:'10px'}}>★★★★☆</span>
             </div>
 

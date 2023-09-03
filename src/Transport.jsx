@@ -1,11 +1,12 @@
 import _ from "lodash";
 import PopCard from "./Components/PopCard";
 import { useMemo, useRef } from "react";
-import useFetch, { Fetch } from "./utils/useFetch";
+// import useFetch, { Fetch } from "./utils/useFetch";
 import { scale } from "chroma-js";
 import * as d3 from "d3";
 import ChartTraffic from "./ChartTraffic";
-import ChartTransportTime from "./ChartTransportTime.jsx";
+// import ScatterChart from "./ScatterChart";
+import ChartTransportTime from "./ChartTransportTime";
 
 export function TransportSummary({props}) {
   
@@ -15,7 +16,7 @@ export function TransportSummary({props}) {
 export default function Transport(props) {
     const transportRef = useRef(null)
     
-    const {coords} = props;
+    
     const {data} = props;
     const {accessData} = props;
     
@@ -209,7 +210,7 @@ export default function Transport(props) {
         
         )}
 
-        {/* <span>{e.naptanId}</span> */}
+        <span>{e.naptanId}</span>
         </div>
         </>
     )}
@@ -222,9 +223,9 @@ export default function Transport(props) {
       ref={transportRef}
       style={{display:'flex', gap:'10px', flexDirection:"column"}}>
 
-      <div style={{height:'200px', width:'100%'}}>
+      <div style={{height:'250px', width:'100%'}}>
 
-      {(accessData) && <ChartTransportTime data={accessData} />}
+      {accessData && <ChartTransportTime data={accessData} />}
 
 
       </div>

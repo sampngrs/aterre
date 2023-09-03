@@ -17,6 +17,8 @@ import os
 import itertools
 import reverse_geocoder as rg
 import geopandas as gpd
+import config
+import geocoder
 
 
 app = Flask(__name__)
@@ -30,52 +32,27 @@ def get_current_time():
 		'location': "London, United Kingdom"
 	}
 
-@app.route('/time/<postcode>')
-def get_current_location(postcode):
-	return getLatLong(postcode)
+# @app.route('/time/<postcode>')
+# def get_current_location(postcode):
+# 	return getLatLong(postcode)
 
 @app.route('/location-search/<search>')
 def get_search_coordinates(search):
 	print(search)
 	return(get_coordinates(search))
-	# return getLatLong(search)
 
 
 
 def get_coordinates(search):
-	url = f"https://nominatim.openstreetmap.org/search.php?q={search}&format=json&limit=1"
-	print(url)
-	# nomi = pgeocode.Nominatim('GB')
-	# data = nomi.query_postal_code(postcode)
-	# print(data)
-	# if (51.258477 <= data.latitude <= 51.721924) & (-0.546570 <= data.longitude <= 0.285645):
-	# 		return redirect('/surrounding/{}/{}'.format(data.latitude, data.longitude))
-	# else:
-	# 		return {'response': 'The location is not in London!'}, 504
 
-	# return {"error": "The location is not in London!"}, 400
+	g = geocoder.bing(search, key = config.api_key)
+	results = g.json
 
-	response = requests.get(url)
-	if len(response.json()) == 0: return {'error': 'There were no results, please try again.'}, 400
-	if response.status_code == 200: 
-		print(response.json())
-		# -0.546570,51.258477,0.285645,51.721924
-		latitude = float(response.json()[0]["lat"])
-		longitude = float(response.json()[0]["lon"])
-		return {
-			'display_name': response.json()[0]["display_name"],
-			'latitude': latitude, 
-			'longitude':longitude
-			}
-	else: return {"error": "The location is not in London!"}, 400
+	return {
+		'latitude': float(results['lat']), 
+		'longitude':float(results['lng'])
+		}
 
-
-	# 	if (51.258477 <= latitude <= 51.721924) & (-0.546570 <= longitude <= 0.285645):
-	# 		return redirect('/surrounding/{}/{}'.format(response.json()[0]["lat"], response.json()[0]["lon"]))
-	# 	else:
-	# 		return {'response': 'The location is not in London!'}, 504
-	# else:
-	# 	return {'response': 'error'}, 504
 
 def getLatLong(postcode):
 	url = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(postcode) +'?format=json'
@@ -150,48 +127,41 @@ def get_transport(lat, lon):
 #     app.run(host='127.0.0.01', port=5000)
 
 @app.route('/access/<code>')
-def get_proximity(code):
+@app.route('/access/<latitude>/<longitude>/<code>')
+def get_proximity(latitude, longitude, code):
+
 	
 	filename = os.path.join(app.static_folder, 'Data', 'stops_new.json')
-
 		
 	with open(filename) as test_file:
 		data = json.load(test_file)
 
+
 	timingList = []
-        
+
 	for x in code.split(','):
-		
+
 		if x not in data:
 			continue
-			
-		timings = bfs(data, x)
-		df = pd.DataFrame.from_dict(timings[1], orient='index', columns = ['time'])
-		ass = pd.DataFrame.from_dict(data, orient='index')
-		ass = ass.drop(('adj'), axis = 1)
-
-		df = pd.concat([ass, df], axis = 1, join = "inner")
-		timings = pd.DataFrame(df.groupby(['time'])['time'].count())
-		timings.rename(columns={"time": data[x]['name']}, inplace=True)
-		timingList.append(timings)
 		
+		timings = bfs(data, x)
+		df = pd.DataFrame.from_dict(timings[1], orient='index', columns = [x])
+		timingList.append(df)
+		
+
 	frame = pd.concat(timingList, axis=1).fillna(0).sort_index()
-	print(df)
+	ass = pd.DataFrame.from_dict(data, orient='index')
+	ass = ass.drop(('adj'), axis = 1)
 
-	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
+	frame = frame.apply(lambda x: x + (haversine(ass.loc[x.name].lon, ass.loc[x.name].lat, float(longitude), float(latitude)) * 1000 / 1.42 / 60))
+	df = pd.concat([ass, frame.min(axis=1)], axis = 1, join = "inner").rename(columns = {0:'time'})
+	df['distance'] = df.apply(lambda x: haversine(x.lon, x.lat, float(longitude), float(latitude)), axis=1)
+	df = df.drop(['lat', 'lon'], axis = 1)
+	form_dic = df.to_dict('index')
+	form_dic
 
-	result = {
-	'id': 'transport', 
-	'type':'area',
-	'title': 'Travel Time', 
-	'data': {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
-	'axes': [{'x': x, 'data': y} for x, y in form_dic.items()]}
-	}
-	
+	return [y for x, y in form_dic.items()]
 
-	# return {'response': 'error'}, 504
-
-	return result
 
 
 @app.route('/crime/<lat>/<lon>')
@@ -261,6 +231,7 @@ def station_attributes(stations, latitude = None, longitude = None):
 	url = f'https://api.tfl.gov.uk/StopPoint/{stations}'
 	print(url)
 	response = (requests.request("GET", url, headers=headers,auth=HTTPBasicAuth('app_key', tfl_key), data=payload))
+	print([[x['naptanId'] for y in x['lineModeGroups']] for x in (response.json() if type(response.json()) == list else [response.json()])])
 	stations = [{
 		'name': x['commonName'], 
 		'naptanId': x['naptanId'], 
@@ -275,7 +246,7 @@ def get_crowding(name):
 	print(name)
 	if name in [os.path.splitext(x)[0] for x in os.listdir('static/Data/Sets/Transport')]: 
 				bbb = pd.read_excel(f"static/Data/Sets/Transport/{name}.xlsx",index_col=0)
-				bbb.drop(['NAPTAN'], axis = 1, inplace = True)
+				bbb.drop(['Unnamed: 0','stationId','lat','lng','Station'], axis = 1, inplace = True)
 				return [{'time': int(x[0:4]), 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
 	else:
 		print(name)

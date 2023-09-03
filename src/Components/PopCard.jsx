@@ -17,7 +17,8 @@ export default function PopCard(props){
     let bodyContent = content({e})
     let headerContent = header({e})
 
-
+    console.log(e)
+    
     return (
         <motion.div 
         ref={rowRef}

@@ -21,8 +21,6 @@ export default function useFetch(uri, text) {
         setLoading(false)
         setAlert({text: <span>{error.error}</span>, type:'error'})
         
-        
-        
     }
     useEffect(() => {
         if (!uri) return;
@@ -37,8 +35,6 @@ export default function useFetch(uri, text) {
             .catch(handleError)
         }, [uri]);
     
-        
-
     return {loading, data, error};
 }
 
