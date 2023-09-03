@@ -4,16 +4,21 @@ def get_current_time():
 from datetime import datetime
 import json
 import math
-from flask import Flask, redirect
+from math import radians, cos, sin, asin, sqrt
+from flask import Flask, redirect, Response
 import requests
 import pandas as pd
 import urllib.parse
 import pgeocode
+from requests.auth import HTTPBasicAuth
 import json
 import pandas as pd
 import os
+import itertools
 import reverse_geocoder as rg
 import geopandas as gpd
+import config
+import geocoder
 
 
 app = Flask(__name__)
@@ -27,10 +32,27 @@ def get_current_time():
 		'location': "London, United Kingdom"
 	}
 
-@app.route('/time/<postcode>')
-def get_current_location(postcode):
+# @app.route('/time/<postcode>')
+# def get_current_location(postcode):
+# 	return getLatLong(postcode)
 
-	return getLatLong(postcode)
+@app.route('/location-search/<search>')
+def get_search_coordinates(search):
+	print(search)
+	return(get_coordinates(search))
+
+
+
+def get_coordinates(search):
+
+	g = geocoder.bing(search, key = config.api_key)
+	results = g.json
+
+	return {
+		'latitude': float(results['lat']), 
+		'longitude':float(results['lng'])
+		}
+
 
 def getLatLong(postcode):
 	url = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(postcode) +'?format=json'
@@ -92,8 +114,9 @@ def get_transport(lat, lon):
 				data['elements'][x]['crowding'] = [{'time': x[0:4], 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
 		if(i['type'] == 'node'):
 			data['elements'][x]['bearing'] = calc_bearing(float(lat), float(lon), data['elements'][x]['lat'], data['elements'][x]['lon'] )            
+			data['elements'][x]['distance'] = haversine(float(lon), float(lat), data['elements'][x]['lon'], data['elements'][x]['lat'])
 
-	return data
+	return json.dumps(data, indent = 3)
 
 	
 
@@ -104,49 +127,41 @@ def get_transport(lat, lon):
 #     app.run(host='127.0.0.01', port=5000)
 
 @app.route('/access/<code>')
-def get_proximity(code):
+@app.route('/access/<latitude>/<longitude>/<code>')
+def get_proximity(latitude, longitude, code):
+
 	
 	filename = os.path.join(app.static_folder, 'Data', 'stops_new.json')
-
 		
 	with open(filename) as test_file:
 		data = json.load(test_file)
 
+
 	timingList = []
-        
+
 	for x in code.split(','):
-		
+
 		if x not in data:
 			continue
-			
-		timings = bfs(data, x)
-		df = pd.DataFrame.from_dict(timings[1], orient='index', columns = ['time'])
-		ass = pd.DataFrame.from_dict(data, orient='index')
-		ass = ass.drop(('adj'), axis = 1)
-
-		df = pd.concat([ass, df], axis = 1, join = "inner")
-		timings = pd.DataFrame(df.groupby(['time'])['time'].count())
-		timings.rename(columns={"time": data[x]['name']}, inplace=True)
-		timingList.append(timings)
 		
+		timings = bfs(data, x)
+		df = pd.DataFrame.from_dict(timings[1], orient='index', columns = [x])
+		timingList.append(df)
+		
+
 	frame = pd.concat(timingList, axis=1).fillna(0).sort_index()
-	print(df)
+	ass = pd.DataFrame.from_dict(data, orient='index')
+	ass = ass.drop(('adj'), axis = 1)
 
-	form_dic = frame.rename(columns = {x[1]:x[0] for x in [i for i in enumerate(frame.columns)]}).to_dict('index')
+	frame = frame.apply(lambda x: x + (haversine(ass.loc[x.name].lon, ass.loc[x.name].lat, float(longitude), float(latitude)) * 1000 / 1.42 / 60))
+	df = pd.concat([ass, frame.min(axis=1)], axis = 1, join = "inner").rename(columns = {0:'time'})
+	df['distance'] = df.apply(lambda x: haversine(x.lon, x.lat, float(longitude), float(latitude)), axis=1)
+	df = df.drop(['lat', 'lon'], axis = 1)
+	form_dic = df.to_dict('index')
+	form_dic
 
-	result =  [
-	{
-	'id': 'transport', 
-	'type':'area',
-	'title': 'Travel Time', 
-	'data': {'legend': {x[0]:x[1] for x in [i for i in enumerate(frame.columns)]}, 
-	'axes': [{'x': x, 'data': y} for x, y in form_dic.items()]}
-	}
-	]
+	return [y for x, y in form_dic.items()]
 
-	# return {'response': 'error'}, 504
-
-	return result
 
 
 @app.route('/crime/<lat>/<lon>')
@@ -205,13 +220,37 @@ def bfs(Adj, s):  # Adj: adjacency list, s: starting vertex
                     frontier.append(v)  # O(1) amortized, add to border
         levels.append(frontier)  # add the new level to levels
     return parent, dist
+    
+@app.route('/station_attributes/<stations>')
+@app.route('/station_attributes/<stations>/<latitude>/<longitude>')
+def station_attributes(stations, latitude = None, longitude = None):
+	stations= ','.join(stations.split(';')) if ';' in stations else stations
+	tfl_key = "989f86eedb184ed6a343b6026599c6c5"
+	payload = {}
+	headers = {}
+	url = f'https://api.tfl.gov.uk/StopPoint/{stations}'
+	print(url)
+	response = (requests.request("GET", url, headers=headers,auth=HTTPBasicAuth('app_key', tfl_key), data=payload))
+	print([[x['naptanId'] for y in x['lineModeGroups']] for x in (response.json() if type(response.json()) == list else [response.json()])])
+	stations = [{
+		'name': x['commonName'], 
+		'naptanId': x['naptanId'], 
+		'crowding': get_crowding(x['naptanId']),
+		'attributes': {y['key'].lower(): y['value'] for y in x['additionalProperties']},
+		'distance': haversine(float(longitude), float(latitude), x['lon'], x['lat']) if (latitude != longitude) else None,
+		'lines': list(itertools.chain.from_iterable([y['lineIdentifier'] for y in x['lineModeGroups'] if y['modeName'] != 'bus'])),
+		'lineModes': [{'type': y['modeName'], 'lines': y['lineIdentifier']} for y in x['lineModeGroups']]} for x in (response.json() if type(response.json()) == list else [response.json()])]
+	return stations
 
-
-def shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+def get_crowding(name):
+	print(name)
+	if name in [os.path.splitext(x)[0] for x in os.listdir('static/Data/Sets/Transport')]: 
+				bbb = pd.read_excel(f"static/Data/Sets/Transport/{name}.xlsx",index_col=0)
+				bbb.drop(['Unnamed: 0','stationId','lat','lng','Station'], axis = 1, inplace = True)
+				return [{'time': int(x[0:4]), 'value': round(y.iloc[0]), 'mean': round(y.iloc[1])} for x, y in bbb.items() if y.iloc[1] != 'Mean']
+	else:
+		print(name)
+		return None 
 
 def parse_data(data):
     n_c = []
@@ -241,8 +280,21 @@ def shutdown():
     shutdown_server()
     return 'Server shutting down...'
 
-
-
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    # Radius of earth in kilometers is 6371
+    km = 6371* c
+    return km
 
 def calc_bearing(lat1, long1, lat2, long2):
   # Convert latitude and longitude to radians
@@ -264,3 +316,4 @@ def calc_bearing(lat1, long1, lat2, long2):
   bearing = (bearing + 360) % 360
   
   return bearing
+

@@ -1,0 +1,9 @@
+.container:hover .shape {
+    opacity: 0.4;
+    filter: saturate(50%);
+  }
+  
+  .container .shape:hover {
+    opacity: 1;
+    filter: saturate(100%);
+  }

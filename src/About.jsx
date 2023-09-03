@@ -10,7 +10,7 @@ return (
 
             <Window {...props} height={300} width={500}> 
             <div style={{backgroundColor:'white', borderRadius:'10px'}}> 
-			<b> <br /> About </b> 
+			<b> <br /> About </b>
             <br /><br />
 
             <p style ={{marginLeft:'20px', marginRight:'20px', width:'100', textAlign:'center'}}> 

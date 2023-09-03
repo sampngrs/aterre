@@ -1,0 +1,37 @@
+.tabulate{
+    display:flex;
+    flex-direction: row;
+    gap:5px;
+    white-space: nowrap;
+    overflow: scroll;
+    flex-shrink: 10;
+    // margin: 5px 10px 5px;
+    font-size:'10px';
+}
+
+.tab {
+    position: relative;
+    padding: 5px 10px 5px 10px;
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    cursor: pointer;
+}
+
+.pill {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background-color:  white;
+    mix-blend-mode: difference;
+    border-radius: 5px;
+}
+
+.tabulate::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabulate {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
